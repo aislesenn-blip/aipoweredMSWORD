@@ -2,20 +2,20 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Code2, Wand2, Download, AlertCircle, CheckCircle2, FileJson, Loader2, Maximize2, Printer } from "lucide-react";
+import React from "react";
 
 export default function Home() {
   const [jsonInput, setJsonInput] = useState("");
 
   useEffect(() => {
-    // Fetch the massive 60-page stress test JSON from the public directory
     fetch('/massive_payload.json')
       .then(res => res.text())
       .then(text => setJsonInput(text))
       .catch(err => console.error("Failed to load massive payload", err));
   }, []);
+
   const [jsonError, setJsonError] = useState<string | null>(null);
-  const [formattedHtml, setFormattedHtml] = useState<string | null>(null);
-  const [dynamicCss, setDynamicCss] = useState<string>("");
+  const [parsedAst, setParsedAst] = useState<any | null>(null);
   const [zenMode, setZenMode] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -29,111 +29,156 @@ export default function Home() {
     }
   };
 
-  const getIconSvg = (name: string, color: string = "currentColor", size: number = 24): string => {
-    const s = size;
-    const c = color;
+  // Convert AST styles to React inline style objects
+  const mapStylesToReact = (astStyle: any): React.CSSProperties => {
+    const reactStyle: any = {};
+    if (!astStyle) return reactStyle;
+
+    if (astStyle.font) reactStyle.fontFamily = `'${astStyle.font}', serif`;
+    if (astStyle.size) reactStyle.fontSize = `${astStyle.size}pt`;
+    if (astStyle.align) reactStyle.textAlign = astStyle.align;
+    if (astStyle.spacing) reactStyle.lineHeight = astStyle.spacing;
+    if (astStyle.bold) reactStyle.fontWeight = "bold";
+    if (astStyle.italic) reactStyle.fontStyle = "italic";
+    if (astStyle.underline) reactStyle.textDecoration = "underline";
+    if (astStyle.color) reactStyle.color = astStyle.color;
+    if (astStyle.textIndent) reactStyle.textIndent = astStyle.textIndent;
+
+    // Layout
+    if (astStyle.border) reactStyle.border = astStyle.border;
+    if (astStyle.borderBottom) reactStyle.borderBottom = astStyle.borderBottom;
+    if (astStyle.borderLeft) reactStyle.borderLeft = astStyle.borderLeft;
+    if (astStyle.borderStyle) reactStyle.borderStyle = astStyle.borderStyle;
+    if (astStyle.backgroundColor) reactStyle.backgroundColor = astStyle.backgroundColor;
+    if (astStyle.padding) reactStyle.padding = astStyle.padding;
+    if (astStyle.paddingBottom) reactStyle.paddingBottom = astStyle.paddingBottom;
+    if (astStyle.margin) reactStyle.margin = astStyle.margin;
+    if (astStyle.marginBottom) reactStyle.marginBottom = astStyle.marginBottom;
+    if (astStyle.marginRight) reactStyle.marginRight = astStyle.marginRight;
+    if (astStyle.borderRadius) reactStyle.borderRadius = astStyle.borderRadius;
+    if (astStyle.width) reactStyle.width = astStyle.width;
+    if (astStyle.borderCollapse) reactStyle.borderCollapse = astStyle.borderCollapse;
+    if (astStyle.display) reactStyle.display = astStyle.display;
+    if (astStyle.alignItems) reactStyle.alignItems = astStyle.alignItems;
+    if (astStyle.pageBreakInside) {
+      reactStyle.breakInside = astStyle.pageBreakInside;
+      reactStyle.pageBreakInside = astStyle.pageBreakInside;
+    }
+
+    // Multi-column
+    if (astStyle.columns) reactStyle.columnCount = astStyle.columns;
+    if (astStyle.columnGap) reactStyle.columnGap = astStyle.columnGap;
+
+    return reactStyle;
+  };
+
+  const RenderIcon = ({ name, color = "currentColor", size = 24 }: { name: string, color?: string, size?: number }) => {
     switch(name.toLowerCase()) {
       case "tick":
       case "check":
-        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        );
       case "cross":
       case "x":
-        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        );
       case "warning":
       case "alert":
-        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        );
       case "info":
-        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+        return (
+          <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        );
       default:
-        return "";
+        return null;
     }
   };
 
-  const renderASTNode = (node: any): string => {
-    if (!node) return "";
+  // Pure React Native Node Renderer
+  const ASTNode = ({ node, index }: { node: any, index: string }) => {
+    if (!node) return null;
 
-    let nodeStyle = "";
-    if (node.style) {
-      if (node.style.font) nodeStyle += `font-family: '${node.style.font}', serif; `;
-      if (node.style.size) nodeStyle += `font-size: ${node.style.size}pt; `;
-      if (node.style.align) nodeStyle += `text-align: ${node.style.align}; `;
-      if (node.style.spacing) nodeStyle += `line-height: ${node.style.spacing}; `;
-      if (node.style.bold) nodeStyle += `font-weight: bold; `;
-      if (node.style.italic) nodeStyle += `font-style: italic; `;
-      if (node.style.underline) nodeStyle += `text-decoration: underline; `;
-      if (node.style.color) nodeStyle += `color: ${node.style.color}; `;
-      if (node.style.textIndent) nodeStyle += `text-indent: ${node.style.textIndent}; `;
+    const reactStyle = mapStylesToReact(node.style);
 
-      if (node.style.border) nodeStyle += `border: ${node.style.border}; `;
-      if (node.style.borderBottom) nodeStyle += `border-bottom: ${node.style.borderBottom}; `;
-      if (node.style.borderLeft) nodeStyle += `border-left: ${node.style.borderLeft}; `;
-      if (node.style.borderStyle) nodeStyle += `border-style: ${node.style.borderStyle}; `;
-      if (node.style.backgroundColor) nodeStyle += `background-color: ${node.style.backgroundColor}; `;
-      if (node.style.padding) nodeStyle += `padding: ${node.style.padding}; `;
-      if (node.style.paddingBottom) nodeStyle += `padding-bottom: ${node.style.paddingBottom}; `;
-      if (node.style.margin) nodeStyle += `margin: ${node.style.margin}; `;
-      if (node.style.marginBottom) nodeStyle += `margin-bottom: ${node.style.marginBottom}; `;
-      if (node.style.marginRight) nodeStyle += `margin-right: ${node.style.marginRight}; `;
-      if (node.style.borderRadius) nodeStyle += `border-radius: ${node.style.borderRadius}; `;
-      if (node.style.width) nodeStyle += `width: ${node.style.width}; `;
-      if (node.style.borderCollapse) nodeStyle += `border-collapse: ${node.style.borderCollapse}; `;
-      if (node.style.display) nodeStyle += `display: ${node.style.display}; `;
-      if (node.style.alignItems) nodeStyle += `align-items: ${node.style.alignItems}; `;
-      if (node.style.pageBreakInside) nodeStyle += `break-inside: ${node.style.pageBreakInside}; page-break-inside: ${node.style.pageBreakInside}; `;
+    // Parse content lines supporting simple line breaks \n
+    const renderContent = () => {
+      if (!node.content) return null;
+      return node.content.split('\\n').map((line: string, i: number) => (
+        <React.Fragment key={i}>
+          {line}
+          {i < node.content.split('\\n').length - 1 && <br />}
+        </React.Fragment>
+      ));
+    };
 
-      if (node.style.columns) nodeStyle += `column-count: ${node.style.columns}; `;
-      if (node.style.columnGap) nodeStyle += `column-gap: ${node.style.columnGap}; `;
-    }
-
-    const contentHtml = node.content ? node.content.replace(/\n/g, '<br/>') : '';
-    let childrenHtml = "";
-    if (node.children && Array.isArray(node.children)) {
-       childrenHtml = node.children.map((childNode: any) => renderASTNode(childNode)).join('');
-    }
-
-    const innerHtml = contentHtml + childrenHtml;
+    const renderChildren = () => {
+       if (node.children && Array.isArray(node.children)) {
+         return node.children.map((child: any, i: number) => (
+            <ASTNode key={`${index}-${i}`} node={child} index={`${index}-${i}`} />
+         ));
+       }
+       return null;
+    };
 
     switch (node.tag) {
       case "Header":
-        return `<div class="doc-header" style="width: 100%; ${nodeStyle}">${innerHtml}</div>`;
+        return <div className="doc-header" style={{ width: '100%', ...reactStyle }}>{renderContent()}{renderChildren()}</div>;
       case "Columns":
-        return `<div class="doc-columns" style="${nodeStyle}">${innerHtml}</div>`;
+        return <div className="doc-columns" style={reactStyle}>{renderContent()}{renderChildren()}</div>;
       case "Icon":
-        const iconSvg = getIconSvg(node.name, node.color, node.size);
-        return `<span style="display: inline-flex; align-items: center; justify-content: center; ${nodeStyle}">${iconSvg}</span>`;
+        return <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', ...reactStyle }}><RenderIcon name={node.name} color={node.color} size={node.size} /></span>;
       case "TitlePage":
-        return `<div class="title-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; break-after: page; page-break-after: always; ${nodeStyle}">${innerHtml}</div>`;
+        return <div className="title-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', breakAfter: 'page', pageBreakAfter: 'always', ...reactStyle }}>{renderContent()}{renderChildren()}</div>;
       case "Kichwa_Kuu":
       case "H1":
-        return `<h1 style="${nodeStyle}">${innerHtml}</h1>`;
+        return <h1 style={reactStyle}>{renderContent()}{renderChildren()}</h1>;
       case "Kichwa_Dogo":
       case "H2":
-        return `<h2 style="${nodeStyle}">${innerHtml}</h2>`;
+        return <h2 style={reactStyle}>{renderContent()}{renderChildren()}</h2>;
       case "Aya":
       case "Paragraph":
-        return `<p style="margin-bottom: 0px; ${nodeStyle}">${innerHtml}</p>`;
+        return <p style={{ marginBottom: 0, ...reactStyle }}>{renderContent()}{renderChildren()}</p>;
       case "Blockquote":
-        return `<blockquote style="${nodeStyle}">${innerHtml}</blockquote>`;
+        return <blockquote style={reactStyle}>{renderContent()}{renderChildren()}</blockquote>;
       case "List":
-        return `<ul style="${nodeStyle}">${innerHtml}</ul>`;
+        return <ul style={reactStyle}>{renderContent()}{renderChildren()}</ul>;
       case "ListItem":
-        return `<li style="margin-bottom: 8px; ${nodeStyle}">${innerHtml}</li>`;
+        return <li style={{ marginBottom: '8px', ...reactStyle }}>{renderContent()}{renderChildren()}</li>;
       case "Footnote":
-        return `<div style="${nodeStyle}"><sup>1</sup> ${innerHtml}</div>`;
+        return <div style={reactStyle}><sup>1</sup> {renderContent()}{renderChildren()}</div>;
       case "Box":
-        return `<div style="${nodeStyle}">${innerHtml}</div>`;
+        return <div style={reactStyle}>{renderContent()}{renderChildren()}</div>;
       case "Table":
-        return `<table style="${nodeStyle}">${innerHtml}</table>`;
+        return <table style={reactStyle}><tbody>{renderContent()}{renderChildren()}</tbody></table>;
       case "TableRow":
-        return `<tr style="${nodeStyle}">${innerHtml}</tr>`;
+        return <tr style={reactStyle}>{renderContent()}{renderChildren()}</tr>;
       case "TableCell":
-        return `<td style="${nodeStyle}">${innerHtml}</td>`;
+        return <td style={reactStyle}>{renderContent()}{renderChildren()}</td>;
       case "Page_Break":
-        // Close current page container and open a new one with page counter increment
-        // Also enforce standard 1-inch (96px) margins directly on the page container
-        return `</div><div class="a4-page-container native-page-break" style="position: relative; padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm; width: 21cm; margin-bottom: 32px;">`;
+        return (
+          <div className="native-page-break">
+            <span className="break-text">Page Break</span>
+          </div>
+        );
       default:
-        return `<div style="${nodeStyle}">${innerHtml}</div>`;
+        return <div style={reactStyle}>{renderContent()}{renderChildren()}</div>;
     }
   };
 
@@ -147,64 +192,8 @@ export default function Home() {
         return;
       }
 
-      // --- DYNAMIC PAGINATION CSS GENERATION ---
-      let customPaginationCss = "";
-      if (ast.Metadata && ast.Metadata.Pagination) {
-        const pConf = ast.Metadata.Pagination;
-        if (pConf.show === false) {
-           customPaginationCss += `.a4-page-container::after { display: none !important; }`;
-        } else {
-           // Format (roman, decimal, etc)
-           const format = pConf.format === "roman" ? "lower-roman" : (pConf.format === "roman-upper" ? "upper-roman" : "decimal");
-           customPaginationCss += `.a4-page-container::after { content: counter(page, ${format}); }`;
-
-           // Placement
-           if (pConf.position) {
-              if (pConf.position.includes("top")) {
-                 customPaginationCss += `.a4-page-container::after { top: 40px; bottom: auto; }`;
-                 customPaginationCss += `@media print { .a4-page-container::after { top: -40px; bottom: auto; } }`;
-              } else {
-                 customPaginationCss += `.a4-page-container::after { bottom: 40px; top: auto; }`;
-                 customPaginationCss += `@media print { .a4-page-container::after { bottom: -40px; top: auto; } }`;
-              }
-
-              if (pConf.position.includes("left")) {
-                 customPaginationCss += `.a4-page-container::after { text-align: left; left: 60px; width: auto; }`;
-              } else if (pConf.position.includes("right")) {
-                 customPaginationCss += `.a4-page-container::after { text-align: right; right: 60px; left: auto; width: auto; }`;
-              } else {
-                 customPaginationCss += `.a4-page-container::after { text-align: center; left: 0; width: 100%; }`;
-              }
-           }
-        }
-      }
-      setDynamicCss(customPaginationCss);
-
-      let htmlOutput = "";
-
-      let watermarkHtml = "";
-      if (ast.Metadata && ast.Metadata.Watermark) {
-        watermarkHtml = `<div class="watermark print-watermark" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(0,0,0,0.05); font-weight: bold; pointer-events: none; z-index: 1; white-space: nowrap;">${ast.Metadata.Watermark}</div>`;
-      }
-
-      htmlOutput += `<div class="document-flow" style="counter-reset: page;">`;
-      htmlOutput += watermarkHtml;
-
-      // Open the very first page container with standard 1-inch (96px) padding
-      htmlOutput += `<div class="a4-page-container" style="position: relative; padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm; width: 21cm; margin-bottom: 32px;">`;
-
-      ast.Document_Tree.forEach((node: any) => {
-         htmlOutput += renderASTNode(node);
-      });
-
-      // Close the final page container
-      htmlOutput += `</div>`;
-
-      htmlOutput += `</div>`;
-      setFormattedHtml(htmlOutput);
-
+      setParsedAst(ast);
       setZenMode(true);
-
     } catch (err) {
       setJsonError("Engine failed to parse AST JSON.");
     }
@@ -225,11 +214,11 @@ export default function Home() {
           <div className="bg-black text-white p-2 rounded-lg">
             <FileJson size={20} />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-black">Native<span className="text-gray-500">PDF Engine</span></h1>
+          <h1 className="text-xl font-semibold tracking-tight text-black">React<span className="text-gray-500">AST Engine</span></h1>
         </div>
 
         <div className="flex items-center gap-3">
-          {formattedHtml && (
+          {parsedAst && (
              <button
                onClick={() => setZenMode(!zenMode)}
                className="text-sm font-medium text-gray-600 hover:text-black transition-colors px-3 py-2 flex items-center gap-2 border border-gray-200 rounded-md bg-white hover:bg-gray-50"
@@ -240,11 +229,11 @@ export default function Home() {
 
           <button
             onClick={handleBrowserPrint}
-            disabled={!formattedHtml}
-            className={`text-sm font-medium px-5 py-2 rounded-md transition-colors flex items-center gap-2 ${formattedHtml ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
+            disabled={!parsedAst}
+            className={`text-sm font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${parsedAst ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm" : "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"}`}
           >
-             <Download size={16} />
-             Export to PDF (Native)
+             <Printer size={16} />
+             Print Native
           </button>
         </div>
       </header>
@@ -291,13 +280,34 @@ export default function Home() {
         {/* Right Panel / Center Canvas: Output Render */}
         <section className={`${zenMode ? 'w-full flex justify-center bg-transparent' : 'flex-1 bg-[#F0F2F5] rounded-xl overflow-hidden relative'} flex flex-col print:w-full print:max-w-none print:block transition-all duration-300`}>
 
-          <div className={`flex-1 ${zenMode ? 'w-full flex flex-col items-center' : 'overflow-y-auto px-6 pb-6 flex flex-col items-center'} print:overflow-visible print:p-0 print:block`}>
-             {formattedHtml ? (
-               <div
-                 ref={printRef}
-                 className="w-full text-black print-container print:shadow-none print:m-0 print:w-full flex flex-col items-center"
-                 dangerouslySetInnerHTML={{ __html: formattedHtml }}
-               />
+          <div className={`flex-1 ${zenMode ? 'w-full flex flex-col items-center' : 'flex-1 overflow-y-auto px-6 pb-6 flex flex-col items-center'} print:overflow-visible print:p-0 print:block print:bg-white`}>
+             {parsedAst ? (
+               <div ref={printRef} className="w-full text-black print-container print:shadow-none print:m-0 print:w-full flex flex-col items-center print:bg-white">
+
+                 <div className="document-flow w-full relative">
+                    {/* Watermark Rendering */}
+                    {parsedAst.Metadata?.Watermark && (
+                      <div className="watermark print-watermark" style={{
+                        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(-45deg)',
+                        fontSize: '100px', color: 'rgba(0,0,0,0.05)', fontWeight: 'bold', pointerEvents: 'none',
+                        zIndex: 1, whiteSpace: 'nowrap'
+                      }}>
+                        {parsedAst.Metadata.Watermark}
+                      </div>
+                    )}
+
+                    {/* Native Continuous React Render */}
+                    <div className="continuous-page-container" style={{
+                       position: 'relative', padding: '96px', background: 'white', color: 'black',
+                       boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', maxWidth: '21cm', margin: '0 auto', minHeight: '100vh'
+                    }}>
+                       {parsedAst.Document_Tree.map((node: any, idx: number) => (
+                           <ASTNode key={`root-${idx}`} node={node} index={`root-${idx}`} />
+                       ))}
+                    </div>
+                 </div>
+
+               </div>
              ) : (
                <div className="text-center mt-32 max-w-xs bg-white p-8 rounded-xl shadow-sm border border-gray-200 print:hidden">
                  <div className="w-16 h-16 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
@@ -313,61 +323,61 @@ export default function Home() {
 
       </main>
 
-      {/* Global Native CSS for Print Media and Pagination */}
+      {/* Global Native CSS for Print Media and Page Breaks */}
       <style dangerouslySetInnerHTML={{__html: `
-        /* Base Pagination Setup for visual preview */
-        .a4-page-container {
-          counter-increment: page;
-        }
-
-        .a4-page-container::after {
-          content: counter(page);
-          position: absolute;
-          bottom: 40px; /* Default Footer margin */
-          left: 0;
+        /* Visual cue for page breaks in UI */
+        .native-page-break {
           width: 100%;
           text-align: center;
-          font-family: Arial, sans-serif;
-          font-size: 11pt;
-          color: #666;
+          border-bottom: 2px dashed #cbd5e1;
+          margin: 60px 0;
+          line-height: 0.1em;
+          position: relative;
         }
-
-        /* Inject Dynamic JSON Customizations (Roman numerals, top/right alignment, etc.) */
-        ${dynamicCss}
+        .native-page-break .break-text {
+          background: #f8fafc;
+          padding: 0 15px;
+          color: #94a3b8;
+          font-size: 12px;
+          font-weight: bold;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+        }
 
         @media print {
           @page {
             size: A4 portrait;
-            /* We use physical page margins for printing so header/footers map correctly natively */
             margin: 1in;
           }
-          body {
+          html, body, .print-container, .continuous-page-container, .document-flow, main, section {
+            background: white !important;
             background-color: white !important;
-            margin: 0;
-            padding: 0;
+            margin: 0 !important;
+            padding: 0 !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
-          .print-container, .a4-page-container {
+          /* Remove layout restrictions to prevent memory crash on 130+ page renders */
+          .print-container, .continuous-page-container {
             box-shadow: none !important;
-            margin: 0 !important;
-            /* Removing physical padding on the container during print because @page margin handles it */
-            padding: 0 !important;
+            max-width: none !important;
             width: 100% !important;
             min-height: auto !important;
+            display: block !important;
           }
           .native-page-break {
-             break-before: page;
-             page-break-before: always;
+             border: none !important;
+             margin: 0 !important;
+             break-before: page !important;
+             page-break-before: always !important;
+          }
+          .native-page-break .break-text {
+             display: none !important;
           }
           .print-watermark {
              position: fixed !important;
              top: 50% !important;
              left: 50% !important;
-          }
-          /* Hide the pseudo-element counter during native print to let @page handle it, or leave it if @page bottom isn't set */
-          .a4-page-container::after {
-             bottom: -40px;
           }
         }
       `}} />
