@@ -16,7 +16,7 @@ People don't hate writing; they hate the friction of writing. Traditional word p
 
 ### A. The UI/UX (Design)
 * **The Infinite Canvas:** A clean, borderless page.
-* **The "Magic Command" (Cmd+K):** Replaces the menu bar. An AI-driven command palette (e.g., "Insert a table comparing Q1 and Q2 revenue").
+* **The "Magic Command" (Cmd+K / '/'):** Replaces the menu bar. An AI-driven command palette (e.g., "Insert a table comparing Q1 and Q2 revenue").
 * **Contextual Pop-ups:** Highlighting text reveals AI options: "Make it sound smarter," "Summarize," "Argue against," or "Translate."
 
 ### B. The Core AI Engine (Features)
