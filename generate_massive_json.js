@@ -18,13 +18,15 @@ function generateScientificFiller(paragraphsCount) {
 const ast = {
   Metadata: {
     Type: "UDOM Research Proposal",
-    Engine: "Ultimate AST Parser v6.0",
+    Engine: "Ultimate AST Parser v7.0",
     Margins: "1 inch",
+    Orientation: "portrait",
+    AutoNumbering: true,
     Watermark: "UDOM RESEARCH 2026",
     Pagination: {
       show: true,
       position: "bottom-center",
-      format: "roman"
+      format: "decimal"
     }
   },
   Document_Tree: [
@@ -34,7 +36,7 @@ const ast = {
       children: [
         {
           tag: "Kichwa_Kuu",
-          style: { font: "Arial", size: 20, bold: true, margin: "0 0 40px 0" },
+          style: { font: "Arial", size: 20, bold: true, margin: "0 0 40px 0", textShadow: "1px 1px 2px #ccc" },
           content: "THE UNIVERSITY OF DODOMA (UDOM)\\nCOLLEGE OF NATURAL AND MATHEMATICAL SCIENCES"
         },
         {
@@ -46,7 +48,7 @@ const ast = {
         },
         {
           tag: "Kichwa_Kuu",
-          style: { font: "Times New Roman", size: 16, bold: true, margin: "0 0 50px 0", spacing: 1.5 },
+          style: { font: "Times New Roman", size: 16, bold: true, margin: "0 0 50px 0", spacing: 1.5, textShadow: "2px 2px 4px rgba(0,0,0,0.2)" },
           content: "ASSESSMENT OF THE INFLUENCE OF HABITAT CONDITION ON GROUND SPIDER ABUNDANCE AND DIVERSITY ACROSS DISTURBED AND UNDISTURBED AREAS AT UDOM"
         },
         {
@@ -63,23 +65,7 @@ const ast = {
     },
     { tag: "Page_Break" },
     {
-      tag: "Kichwa_Kuu",
-      style: { font: "Times New Roman", size: 14, bold: true, align: "center", marginBottom: "20px" },
-      content: "TABLE OF CONTENTS"
-    },
-    {
-      tag: "List",
-      style: { font: "Arial", size: 11, spacing: 2, listStyleType: "none" },
-      children: [
-        { tag: "ListItem", content: "DECLARATION ........................................................................................ ii" },
-        { tag: "ListItem", content: "ABSTRACT ............................................................................................. iii" },
-        { tag: "ListItem", content: "CHAPTER ONE: INTRODUCTION ..................................................... 1" },
-        { tag: "ListItem", content: "    1.1 Background of the Study ........................................................... 1" },
-        { tag: "ListItem", content: "    1.2 Statement of the Problem .......................................................... 2" },
-        { tag: "ListItem", content: "    1.3 Objectives of the Study ............................................................. 3" },
-        { tag: "ListItem", content: "CHAPTER TWO: LITERATURE REVIEW .......................................... 4" },
-        { tag: "ListItem", content: "CHAPTER THREE: METHODOLOGY ............................................... 60" }
-      ]
+      tag: "TableOfContents"
     },
     { tag: "Page_Break" },
     {

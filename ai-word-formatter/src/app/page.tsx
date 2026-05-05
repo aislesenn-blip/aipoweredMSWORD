@@ -17,6 +17,7 @@ export default function Home() {
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [parsedAst, setParsedAst] = useState<any | null>(null);
   const [zenMode, setZenMode] = useState(false);
+  const [extractedTOC, setExtractedTOC] = useState<any[]>([]);
   const printRef = useRef<HTMLDivElement>(null);
 
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -43,6 +44,8 @@ export default function Home() {
     if (astStyle.underline) reactStyle.textDecoration = "underline";
     if (astStyle.color) reactStyle.color = astStyle.color;
     if (astStyle.textIndent) reactStyle.textIndent = astStyle.textIndent;
+    if (astStyle.textShadow) reactStyle.textShadow = astStyle.textShadow;
+    if (astStyle.boxShadow) reactStyle.boxShadow = astStyle.boxShadow;
 
     // Layout
     if (astStyle.border) reactStyle.border = astStyle.border;
@@ -144,17 +147,42 @@ export default function Home() {
         return <div className="doc-columns" style={reactStyle}>{renderContent()}{renderChildren()}</div>;
       case "Icon":
         return <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', ...reactStyle }}><RenderIcon name={node.name} color={node.color} size={node.size} /></span>;
+      case "Image":
+        return <img src={node.src} alt={node.alt || "Document Graphic"} style={{ maxWidth: '100%', height: 'auto', ...reactStyle }} />;
       case "TitlePage":
         return <div className="title-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', breakAfter: 'page', pageBreakAfter: 'always', ...reactStyle }}>{renderContent()}{renderChildren()}</div>;
       case "Kichwa_Kuu":
       case "H1":
-        return <h1 style={reactStyle}>{renderContent()}{renderChildren()}</h1>;
+        // Inject ID for cross-referencing
+        return <h1 id={`heading-${index}`} className="auto-number-h1" style={reactStyle}>{renderContent()}{renderChildren()}</h1>;
       case "Kichwa_Dogo":
       case "H2":
-        return <h2 style={reactStyle}>{renderContent()}{renderChildren()}</h2>;
+        return <h2 id={`heading-${index}`} className="auto-number-h2" style={reactStyle}>{renderContent()}{renderChildren()}</h2>;
       case "Aya":
       case "Paragraph":
         return <p style={{ marginBottom: 0, ...reactStyle }}>{renderContent()}{renderChildren()}</p>;
+      case "TableOfContents":
+        return (
+          <div style={{ ...reactStyle, fontFamily: 'Arial, sans-serif' }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', fontWeight: 'bold' }}>TABLE OF CONTENTS</h2>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {extractedTOC.map((tocItem, i) => (
+                <li key={i} style={{
+                  marginLeft: tocItem.level === 2 ? '20px' : '0px',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  borderBottom: '1px dotted #ccc'
+                }}>
+                  <a href={`#${tocItem.id}`} style={{ textDecoration: 'none', color: '#1e3a8a', backgroundColor: 'white', paddingRight: '10px' }}>
+                    {tocItem.content}
+                  </a>
+                  <span style={{ backgroundColor: 'white', paddingLeft: '10px' }}>{/* Target Page Placeholder (Client-side JS limitation) */} &#8594;</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
       case "Blockquote":
         return <blockquote style={reactStyle}>{renderContent()}{renderChildren()}</blockquote>;
       case "List":
@@ -190,6 +218,90 @@ export default function Home() {
       if (!ast.Document_Tree || !Array.isArray(ast.Document_Tree)) {
         setJsonError("Missing 'Document_Tree' array in JSON.");
         return;
+      }
+
+      // --- AUTO TOC EXTRACTION LOGIC ---
+      const toc: any[] = [];
+      const extractHeadings = (nodes: any[], prefix: string) => {
+         nodes.forEach((n, i) => {
+            const currentIndex = `${prefix}-${i}`;
+            if (n.tag === "Kichwa_Kuu" || n.tag === "H1") {
+               toc.push({ level: 1, content: n.content, id: `heading-${currentIndex}` });
+            } else if (n.tag === "Kichwa_Dogo" || n.tag === "H2") {
+               toc.push({ level: 2, content: n.content, id: `heading-${currentIndex}` });
+            }
+            if (n.children && Array.isArray(n.children)) {
+               extractHeadings(n.children, currentIndex);
+            }
+         });
+      };
+      extractHeadings(ast.Document_Tree, "root");
+      setExtractedTOC(toc);
+
+      // --- DYNAMIC CSS GENERATOR FOR NEW FEATURES ---
+      let customPaginationCss = "";
+
+      if (ast.Metadata && ast.Metadata.Pagination) {
+        const pConf = ast.Metadata.Pagination;
+        if (pConf.show === false) {
+           customPaginationCss += `.a4-page-container::after { display: none !important; }`;
+        } else {
+           const format = pConf.format === "roman" ? "lower-roman" : (pConf.format === "roman-upper" ? "upper-roman" : "decimal");
+           customPaginationCss += `.a4-page-container::after { content: counter(page, ${format}); }`;
+
+           if (pConf.position) {
+              if (pConf.position.includes("top")) {
+                 customPaginationCss += `.a4-page-container::after { top: 40px; bottom: auto; }`;
+                 customPaginationCss += `@media print { .a4-page-container::after { top: -40px; bottom: auto; } }`;
+              } else {
+                 customPaginationCss += `.a4-page-container::after { bottom: 40px; top: auto; }`;
+                 customPaginationCss += `@media print { .a4-page-container::after { bottom: -40px; top: auto; } }`;
+              }
+
+              if (pConf.position.includes("left")) {
+                 customPaginationCss += `.a4-page-container::after { text-align: left; left: 60px; width: auto; }`;
+              } else if (pConf.position.includes("right")) {
+                 customPaginationCss += `.a4-page-container::after { text-align: right; right: 60px; left: auto; width: auto; }`;
+              } else {
+                 customPaginationCss += `.a4-page-container::after { text-align: center; left: 0; width: 100%; }`;
+              }
+           }
+        }
+      }
+
+      // Auto-Numbering Engine
+      if (ast.Metadata && ast.Metadata.AutoNumbering) {
+         customPaginationCss += `
+           .continuous-page-container { counter-reset: h1counter; }
+           .auto-number-h1 { counter-increment: h1counter; counter-reset: h2counter; }
+           .auto-number-h1::before { content: counter(h1counter) ". "; }
+           .auto-number-h2 { counter-increment: h2counter; }
+           .auto-number-h2::before { content: counter(h1counter) "." counter(h2counter) " "; }
+         `;
+      }
+
+      // Page Orientation Engine
+      if (ast.Metadata && ast.Metadata.Orientation === "landscape") {
+         customPaginationCss += `
+           @media print { @page { size: A4 landscape; margin: 1in; } }
+           .continuous-page-container { max-width: 29.7cm !important; min-height: 21cm !important; }
+         `;
+      } else {
+         customPaginationCss += `
+           @media print { @page { size: A4 portrait; margin: 1in; } }
+           .continuous-page-container { max-width: 21cm !important; min-height: 29.7cm !important; }
+         `;
+      }
+
+      // Set dynamically constructed CSS to override state later if needed
+      if(typeof document !== 'undefined') {
+        let styleNode = document.getElementById('dynamic-ast-styles');
+        if (!styleNode) {
+            styleNode = document.createElement('style');
+            styleNode.id = 'dynamic-ast-styles';
+            document.head.appendChild(styleNode);
+        }
+        styleNode.innerHTML = customPaginationCss;
       }
 
       setParsedAst(ast);
