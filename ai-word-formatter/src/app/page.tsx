@@ -6,55 +6,85 @@ import { Code2, Wand2, Download, AlertCircle, CheckCircle2, FileJson } from "luc
 export default function Home() {
   const defaultJson = `{
   "Metadata": {
-    "Type": "Barua Rasmi",
-    "Engine": "Format-by-Example AST Parser",
-    "Margins": "1.5 inch left"
+    "Type": "Ripoti ya Fedha",
+    "Engine": "Recursive AST Parser v2.0",
+    "Margins": "1 inch"
   },
   "Document_Tree": [
     {
       "tag": "Kichwa_Kuu",
+      "style": { "font": "Arial", "size": 18, "align": "center", "bold": true },
+      "content": "RIPOTI YA ROBO MWAKA"
+    },
+    {
+      "tag": "Box",
       "style": {
-        "font": "Arial",
-        "size": 16,
-        "align": "center"
+        "border": "2px solid #2563eb",
+        "backgroundColor": "#eff6ff",
+        "padding": "16px",
+        "borderRadius": "8px",
+        "margin": "20px 0"
       },
-      "content": "BARUA YA KUTHIBITISHA MPANGO KAZI MPYA"
+      "children": [
+        {
+          "tag": "Aya",
+          "style": { "font": "Arial", "size": 12, "bold": true, "color": "#1d4ed8" },
+          "content": "KUMBUKA: Takwimu hizi ni za siri na zinatumika kwa matumizi ya ndani tu."
+        }
+      ]
+    },
+    {
+      "tag": "Table",
+      "style": {
+        "width": "100%",
+        "borderCollapse": "collapse",
+        "margin": "20px 0"
+      },
+      "children": [
+        {
+          "tag": "TableRow",
+          "children": [
+            {
+              "tag": "TableCell",
+              "style": { "border": "1px solid black", "padding": "8px", "backgroundColor": "#f3f4f6", "bold": true },
+              "content": "Mwezi"
+            },
+            {
+              "tag": "TableCell",
+              "style": { "border": "1px solid black", "padding": "8px", "backgroundColor": "#f3f4f6", "bold": true },
+              "content": "Mapato"
+            }
+          ]
+        },
+        {
+          "tag": "TableRow",
+          "children": [
+            {
+              "tag": "TableCell",
+              "style": { "border": "1px solid black", "padding": "8px" },
+              "content": "Januari"
+            },
+            {
+              "tag": "TableCell",
+              "style": { "border": "1px solid black", "padding": "8px", "align": "right" },
+              "content": "TZS 5,000,000"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "Page_Break"
+    },
+    {
+      "tag": "Kichwa_Dogo",
+      "style": { "font": "Arial", "size": 16, "bold": true },
+      "content": "Ukurasa Mpya (Baada ya Page Break)"
     },
     {
       "tag": "Aya",
-      "style": {
-        "spacing": 1.5,
-        "font": "Times New Roman",
-        "size": 12
-      },
-      "content": "YAH: MAPINDUZI YA KUPANGILIA NYARAKA BILA STRESS"
-    },
-    {
-      "tag": "Aya",
-      "style": {
-        "spacing": 1.5,
-        "font": "Times New Roman",
-        "size": 12
-      },
-      "content": "Ndugu Mkurugenzi wa Bidhaa, naandika barua hii kudhibitisha kuwa tumepata muarobaini wa kweli. Mfumo wetu sasa hautalazimisha watumiaji kuchat na AI, bali utafanya uchawi wa kunyonya muonekano wa mfano na kuupachika kwenye maneno ghafi ya mtumiaji chini ya milisekunde chache."
-    },
-    {
-      "tag": "Aya",
-      "style": {
-        "spacing": 1.5,
-        "font": "Times New Roman",
-        "size": 12
-      },
-      "content": "Huu ni uthibitisho halisi wa jinsi 'Semantic Tagging' inavyofanya kazi nyuma ya pazia. Kama unavyoona kwenye hii JSON, tunatenganisha kabisa 'Muonekano' (Style) na 'Maudhui' (Content). Hii inalinda usahihi wa kazi ya mteja kwa asilimia 100 na kuzuia AI kupotosha (hallucinate) maneno."
-    },
-    {
-      "tag": "Aya",
-      "style": {
-        "spacing": 1.5,
-        "font": "Times New Roman",
-        "size": 12
-      },
-      "content": "Wako Kibiashara,\\n\\nChief Engineer."
+      "style": { "font": "Times New Roman", "size": 12, "spacing": 1.5 },
+      "content": "Huu ni uthibitisho wa jinsi Engine yetu mpya inavyosoma na kuelewa watoto (children) ndani ya AST, na kuruhusu uchoraji wa Tables, Boxes, na kukata kurasa kikamilifu."
     }
   ]
 }`;
@@ -74,6 +104,70 @@ export default function Home() {
     }
   };
 
+  // --- RECURSIVE RENDERER ---
+  const renderASTNode = (node: any): string => {
+    if (!node) return "";
+
+    let nodeStyle = "";
+    if (node.style) {
+      if (node.style.font) nodeStyle += `font-family: '${node.style.font}', serif; `;
+      if (node.style.size) nodeStyle += `font-size: ${node.style.size}pt; `;
+      if (node.style.align) nodeStyle += `text-align: ${node.style.align}; `;
+      if (node.style.spacing) nodeStyle += `line-height: ${node.style.spacing}; `;
+      if (node.style.bold) nodeStyle += `font-weight: bold; `;
+      if (node.style.underline) nodeStyle += `text-decoration: underline; `;
+      if (node.style.color) nodeStyle += `color: ${node.style.color}; `;
+
+      // Box/Table Specific Styles
+      if (node.style.border) nodeStyle += `border: ${node.style.border}; `;
+      if (node.style.backgroundColor) nodeStyle += `background-color: ${node.style.backgroundColor}; `;
+      if (node.style.padding) nodeStyle += `padding: ${node.style.padding}; `;
+      if (node.style.margin) nodeStyle += `margin: ${node.style.margin}; `;
+      if (node.style.borderRadius) nodeStyle += `border-radius: ${node.style.borderRadius}; `;
+      if (node.style.width) nodeStyle += `width: ${node.style.width}; `;
+      if (node.style.borderCollapse) nodeStyle += `border-collapse: ${node.style.borderCollapse}; `;
+    }
+
+    // Process Content or Children
+    const contentHtml = node.content ? node.content.replace(/\n/g, '<br/>') : '';
+    let childrenHtml = "";
+    if (node.children && Array.isArray(node.children)) {
+       childrenHtml = node.children.map((childNode: any) => renderASTNode(childNode)).join('');
+    }
+
+    const innerHtml = contentHtml + childrenHtml;
+
+    switch (node.tag) {
+      case "Kichwa_Kuu":
+      case "H1":
+        return `<h1 style="margin-bottom: 24px; ${nodeStyle}">${innerHtml}</h1>`;
+      case "Kichwa_Dogo":
+      case "H2":
+        return `<h2 style="margin-top: 20px; margin-bottom: 12px; ${nodeStyle}">${innerHtml}</h2>`;
+      case "Aya":
+      case "Paragraph":
+        return `<p style="margin-bottom: 16px; ${nodeStyle}">${innerHtml}</p>`;
+
+      // Complex Elements
+      case "Box":
+        return `<div style="${nodeStyle}">${innerHtml}</div>`;
+      case "Table":
+        return `<table style="${nodeStyle}">${innerHtml}</table>`;
+      case "TableRow":
+        return `<tr style="${nodeStyle}">${innerHtml}</tr>`;
+      case "TableCell":
+        return `<td style="${nodeStyle}">${innerHtml}</td>`;
+
+      // Layout Control
+      case "Page_Break":
+        // html2pdf.js uses the class 'html2pdf__page-break' to force breaks
+        return `<div class="html2pdf__page-break" style="page-break-before: always; height: 1px; width: 100%; border-bottom: 1px dashed #ccc; margin: 40px 0; opacity: 0.3;"></div>`;
+
+      default:
+        return `<div style="${nodeStyle}">${innerHtml}</div>`;
+    }
+  };
+
   const handleExecute = () => {
     try {
       const ast = JSON.parse(jsonInput);
@@ -86,43 +180,18 @@ export default function Home() {
 
       let htmlOutput = "";
 
-      // Determine global margins
       let containerStyle = "padding: 40px;";
       if (ast.Metadata && ast.Metadata.Margins) {
-         if (ast.Metadata.Margins.includes("1.5 inch left")) {
-            containerStyle = "padding: 40px 40px 40px 96px;"; // ~1.5 inch left padding
+         if (ast.Metadata.Margins.includes("1.5 inch")) {
+            containerStyle = "padding: 40px 40px 40px 96px;";
          }
       }
 
       htmlOutput += `<div style="${containerStyle}">`;
 
-      // AST Parser Loop
+      // Trigger the recursive parser
       ast.Document_Tree.forEach((node: any) => {
-        let nodeStyle = "";
-
-        // Translate AST styles to CSS
-        if (node.style) {
-          if (node.style.font) nodeStyle += `font-family: '${node.style.font}', serif; `;
-          if (node.style.size) nodeStyle += `font-size: ${node.style.size}pt; `;
-          if (node.style.align) nodeStyle += `text-align: ${node.style.align}; `;
-          if (node.style.spacing) nodeStyle += `line-height: ${node.style.spacing}; `;
-          if (node.style.bold) nodeStyle += `font-weight: bold; `;
-          if (node.style.underline) nodeStyle += `text-decoration: underline; `;
-        }
-
-        // Map AST tags to HTML elements and render content (handling line breaks)
-        const formattedContent = node.content ? node.content.replace(/\n/g, '<br/>') : '';
-
-        if (node.tag === "Kichwa_Kuu" || node.tag === "H1") {
-          htmlOutput += `<h1 style="font-weight: bold; margin-bottom: 24px; ${nodeStyle}">${formattedContent}</h1>`;
-        } else if (node.tag === "Kichwa_Dogo" || node.tag === "H2") {
-          htmlOutput += `<h2 style="font-weight: bold; margin-top: 20px; margin-bottom: 12px; ${nodeStyle}">${formattedContent}</h2>`;
-        } else if (node.tag === "Aya" || node.tag === "Paragraph") {
-          htmlOutput += `<p style="margin-bottom: 16px; ${nodeStyle}">${formattedContent}</p>`;
-        } else {
-          // Fallback
-          htmlOutput += `<div style="margin-bottom: 16px; ${nodeStyle}">${formattedContent}</div>`;
-        }
+         htmlOutput += renderASTNode(node);
       });
 
       htmlOutput += `</div>`;
@@ -141,9 +210,10 @@ export default function Home() {
 
     const opt = {
       margin:       10,
-      filename:     'Rendered_Document.pdf',
+      filename:     'Rendered_Document_Advanced.pdf',
       image:        { type: 'jpeg' as const, quality: 0.98 },
       html2canvas:  { scale: 2 },
+      pagebreak:    { mode: 'css', avoid: ['tr', 'h1', 'h2'] }, // Respect css page breaks and avoid breaking rows
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
     };
 
@@ -160,7 +230,7 @@ export default function Home() {
           <div className="bg-black text-white p-2 rounded-lg">
             <FileJson size={20} />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-black">AST<span className="text-gray-500">Renderer</span></h1>
+          <h1 className="text-xl font-semibold tracking-tight text-black">AST<span className="text-gray-500">Renderer v2</span></h1>
         </div>
         <div className="flex gap-3">
           <button
@@ -182,7 +252,7 @@ export default function Home() {
           <div className="p-4 border-b border-gray-800 flex items-center justify-between bg-[#2d2d2d]">
             <div className="flex items-center gap-2">
               <Code2 size={18} className="text-blue-400" />
-              <h2 className="text-sm font-semibold text-gray-200">1. Paste AST JSON Payload</h2>
+              <h2 className="text-sm font-semibold text-gray-200">1. Paste Advanced AST JSON</h2>
             </div>
             {jsonError ? (
                <span className="text-xs text-red-400 flex items-center gap-1 font-medium bg-red-400/10 px-2 py-1 rounded"><AlertCircle size={14}/> {jsonError}</span>
@@ -215,18 +285,19 @@ export default function Home() {
         </div>
 
         {/* Right Panel: Output Render */}
-        <section className="flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+        <section className="flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50 z-10">
              <div className="flex items-center gap-2">
                <Wand2 size={18} className="text-purple-500" />
                <h2 className="text-sm font-semibold text-gray-700">2. Rendered Output</h2>
              </div>
           </div>
+
           <div className="flex-1 bg-gray-100/80 p-6 overflow-y-auto flex justify-center items-start">
              {formattedHtml ? (
                <div
                  ref={printRef}
-                 className="bg-white shadow-xl w-full max-w-[21cm] min-h-[29.7cm] border border-gray-200 text-black"
+                 className="bg-white shadow-xl w-full max-w-[21cm] min-h-[29.7cm] border border-gray-200 text-black print-container"
                  dangerouslySetInnerHTML={{ __html: formattedHtml }}
                />
              ) : (
@@ -241,7 +312,7 @@ export default function Home() {
           </div>
 
           {/* Mobile Execute Button */}
-          <div className="lg:hidden absolute bottom-6 right-6">
+          <div className="lg:hidden absolute bottom-6 right-6 z-20">
              <button
                 onClick={handleExecute}
                 disabled={!isReady}
