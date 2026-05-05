@@ -1,36 +1,37 @@
-# PRD: AI-Powered Document Editor (The "Mashine")
+# PRD: AI-Powered Document Editor (The "Mashine" - Hybrid Familiarity Model)
 
-## 1. The Core Problems (What are we solving?)
-People don't hate writing; they hate the friction of writing. Traditional word processors (like MS Word) fail because:
-* **The "Blank Page Anxiety":** Starting from scratch is intimidating.
-* **Context Switching:** Jumping between Word, ChatGPT, Google, and notes kills the "Flow State".
-* **Formatting Fatigue:** Wasting time on fonts, margins, and layouts instead of the actual content.
-* **Information Silos:** Inability to easily recall or fetch data from previous documents or external sources without leaving the canvas.
+## 1. The Core Philosophy (Familiarity meets Magic)
+We are building the ultimate AI-powered document editor, but we must respect **User Habit**. People are heavily conditioned by MS Word. If we change the UI too much, we introduce a learning curve, which causes friction.
+* **The Strategy:** The UI must look and feel *exactly* like MS Word (ribbons, A4 page layout, standard tools) so the user feels instantly at home. However, the *magic* (AI and deterministic formatting) happens seamlessly in the background and within familiar toolbars.
 
-## 2. User Psychology & Expectations (The Apple Mindset)
-* **Invisible Tech:** The user shouldn't feel like they are "using AI." The AI is an invisible partner.
-* **Zero Cognitive Load:** No ribbons with 1,000+ unused buttons. A minimalist canvas where tools only appear contextually.
-* **Intent-Based Action:** The user states their intent ("Make this a legal contract"), and the system executes the formatting and phrasing.
+## 2. The Auto-Detect & Verification Flow (Saving Tokens, Zero Hallucinations)
+Instead of forcing users to learn markdown (`/h1`) or relying entirely on expensive AI LLM calls for every keystroke, we use a smart, deterministic **Auto-Detection Engine** with a Human-in-the-Loop verification step.
 
-## 3. The Design & Features A-Z (Blueprint)
+### Step 1: Content Injection & Auto-Detection
+When a user pastes or uploads text (e.g., a research paper, a letter), the system's deterministic engine scans it. It uses basic heuristics to map the document:
+* "This short line at the top is probably a `Title`."
+* "This block of text is a `Paragraph`."
+* "This list with numbers is an `Ordered List`."
+* "This document has an Abstract and Methodology, it is a `Research Paper`."
 
-### A. The UI/UX (Design)
-* **The Infinite Canvas:** A clean, borderless page.
-* **The "Magic Command" (Cmd+K / '/'):** Replaces the menu bar. An AI-driven command palette (e.g., "Insert a table comparing Q1 and Q2 revenue").
-* **Contextual Pop-ups:** Highlighting text reveals AI options: "Make it sound smarter," "Summarize," "Argue against," or "Translate."
+### Step 2: The Verification UI (Interactive Ramani)
+The system enters a "Verification Mode."
+* The UI communicates friendly to the user: *"I've organized your document. Does this look right?"*
+* Every block has a visual tag (e.g., `[Heading]`, `[Paragraph]`).
+* The user simply clicks a green **"Tick" (✓)** to confirm, or a friendly **"Adjust" (⚙)** button to change a tag (e.g., changing `Paragraph` to `Quote`) using a simple dropdown.
+* **No tech skills required.** The interface talks to them like a helpful assistant.
+* *Result:* The system now has a mathematically perfect, 100% accurate "Ramani" (Document Map/AST) of the entire text. No AI hallucinations.
 
-### B. The Core AI Engine (Features)
-* **Thought Partner (Brainstorming Mode):** Asks "What are we writing today?" and instantly generates a structured outline.
-* **Inline Auto-Complete (Telepathy):** Reads document context and ghost-suggests the next sentence/paragraph. (Tab to accept).
-* **RAG Integration (Chat with your Docs):** Type `@` to instantly query your Drive/Local files and pull facts without opening them.
-* **Dynamic Tone Shifter:** A slider to adjust text from "Casual" to "Academic" instantly.
-* **Auto-Fact Checker:** Highlights potential factual errors with a yellow squiggly line and suggests the correct fact.
+### Step 3: Contextual AI Editing (Page-Specific)
+Once the map is verified, the user interacts with the standard MS Word-style UI.
+* If they want a table on Page 3, they go to Page 3, highlight a section, and tell the AI (via a sidebar or contextual popup): *"Build a table comparing these two paragraphs right here."*
+* Because the system has the verified Ramani (Map), it deterministicly executes the command and injects the table into that exact block, shifting the content down perfectly without breaking the layout.
 
-### C. Post-Writing (Formatting)
-* **Semantic Formatting:** User says "Format as a Harvard Research Paper" and the system applies all styles in one click.
-* **Auto-Generative Assets:** Highlight a paragraph and click "Generate Diagram" to instantly visualize the text.
+## 3. Style Cloning (Copying Formats via AI)
+Users can upload an existing document and say: *"Make my document look exactly like this one."*
+* The AI acts as a CSS extractor. It looks at the uploaded document, extracts the font sizes, margins, and heading styles, and updates the deterministic engine's stylesheet.
+* The system applies this new style globally to our verified "Ramani." Perfect formatting, zero hallucinations.
 
 ## 4. Business & Strategy: CAC, Growth & Monetization
-* **CAC (Customer Acquisition Cost):** Driven to near $0 via a **Viral Multiplayer Loop**. When a user shares a document for review, the reviewer experiences the "Magic" AI features natively, converting them into users.
-* **Target Audience (Early Adopters):** Founders (Pitch decks, proposals), Researchers/Lawyers (Synthesizing large documents), and Creators.
-* **Monetization:** Freemium model. Core writing is free. Heavy AI tasks (RAG across 100+ docs, image generation) consume "credits" requiring a $15-$20/mo subscription.
+* **CAC (Customer Acquisition Cost):** Low friction. Users switch because it *looks* like Word but *acts* like a super-assistant. The viral loop is triggered when users share perfectly formatted, complex documents (like Research Papers) instantly.
+* **Monetization:** Freemium. The familiar MS Word editor and Auto-Detect Engine are free. Advanced AI actions (Style Cloning, auto-generating complex tables from data) consume credits.
