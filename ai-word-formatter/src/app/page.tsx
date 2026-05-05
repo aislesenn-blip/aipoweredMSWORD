@@ -1,92 +1,106 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Code2, Wand2, Download, AlertCircle, CheckCircle2, FileJson, Loader2, Maximize2, Minimize2, Printer } from "lucide-react";
+import { Code2, Wand2, Download, AlertCircle, CheckCircle2, FileJson, Loader2, Maximize2, Printer } from "lucide-react";
 
 export default function Home() {
   const defaultJson = `{
   "Metadata": {
-    "Type": "Harvard Research Proposal",
-    "Engine": "Recursive AST Parser v3.0",
-    "Margins": "1 inch"
+    "Type": "Advanced Document with Graphics",
+    "Engine": "Ultimate AST Parser v4.0",
+    "Margins": "1 inch",
+    "Watermark": "CONFIDENTIAL"
   },
   "Document_Tree": [
     {
-      "tag": "TitlePage",
-      "style": { "align": "center", "margin": "100px 0" },
+      "tag": "Header",
+      "style": { "color": "#6b7280", "font": "Arial", "size": 10, "align": "right", "borderBottom": "1px solid #e5e7eb", "paddingBottom": "10px", "marginBottom": "20px" },
+      "content": "Google Workspace Internal | Q3 Report"
+    },
+    {
+      "tag": "Kichwa_Kuu",
+      "style": { "font": "Arial", "size": 24, "bold": true, "align": "center", "margin": "40px 0" },
+      "content": "FEATURE COMPLETION AUDIT"
+    },
+    {
+      "tag": "Columns",
+      "style": { "columns": "2", "columnGap": "40px" },
       "children": [
         {
-          "tag": "Kichwa_Kuu",
-          "style": { "font": "Times New Roman", "size": 18, "bold": true, "margin": "0 0 50px 0" },
-          "content": "THE EVOLUTION OF DETERMINISTIC FORMATTING ENGINES"
+          "tag": "Aya",
+          "style": { "font": "Times New Roman", "size": 12, "align": "justify" },
+          "content": "Our new layout engine supports multi-column text formatting, bringing true newspaper and academic journal capabilities directly to the JSON format. This allows users to create dense informational layouts without relying on complex table structures, exactly like Microsoft Word."
         },
         {
           "tag": "Aya",
-          "style": { "font": "Times New Roman", "size": 12, "spacing": 2, "margin": "20px 0" },
-          "content": "A Dissertation Proposal Submitted by\\nChief Engineer"
+          "style": { "font": "Times New Roman", "size": 12, "align": "justify" },
+          "content": "Furthermore, we have introduced native SVG Icon rendering. You can now inject standard shapes, ticks, and crosses anywhere in the document to signify status, warnings, or approvals."
+        }
+      ]
+    },
+    {
+      "tag": "Box",
+      "style": { "border": "1px solid #e5e7eb", "padding": "20px", "margin": "40px 0", "borderRadius": "8px", "backgroundColor": "#f9fafb" },
+      "children": [
+        {
+          "tag": "Kichwa_Dogo",
+          "style": { "font": "Arial", "size": 14, "bold": true, "marginBottom": "15px" },
+          "content": "Status Checklist"
         },
         {
-          "tag": "Aya",
-          "style": { "font": "Times New Roman", "size": 12, "margin": "150px 0 0 0" },
-          "content": "Harvard University\\nMay 2026"
+          "tag": "Table",
+          "style": { "width": "100%", "borderCollapse": "collapse" },
+          "children": [
+            {
+              "tag": "TableRow",
+              "children": [
+                { "tag": "TableCell", "style": { "padding": "10px", "borderBottom": "1px solid #ddd", "width": "40px" }, "children": [{ "tag": "Icon", "name": "tick", "color": "#16a34a", "size": 20 }] },
+                { "tag": "TableCell", "style": { "padding": "10px", "borderBottom": "1px solid #ddd", "font": "Arial" }, "content": "Typography & Formatting" }
+              ]
+            },
+            {
+              "tag": "TableRow",
+              "children": [
+                { "tag": "TableCell", "style": { "padding": "10px", "borderBottom": "1px solid #ddd" }, "children": [{ "tag": "Icon", "name": "tick", "color": "#16a34a", "size": 20 }] },
+                { "tag": "TableCell", "style": { "padding": "10px", "borderBottom": "1px solid #ddd", "font": "Arial" }, "content": "Tables & Boxes" }
+              ]
+            },
+            {
+              "tag": "TableRow",
+              "children": [
+                { "tag": "TableCell", "style": { "padding": "10px", "borderBottom": "1px solid #ddd" }, "children": [{ "tag": "Icon", "name": "tick", "color": "#16a34a", "size": 20 }] },
+                { "tag": "TableCell", "style": { "padding": "10px", "borderBottom": "1px solid #ddd", "font": "Arial" }, "content": "Native SVG Ticks & Crosses" }
+              ]
+            },
+            {
+              "tag": "TableRow",
+              "children": [
+                { "tag": "TableCell", "style": { "padding": "10px" }, "children": [{ "tag": "Icon", "name": "cross", "color": "#dc2626", "size": 20 }] },
+                { "tag": "TableCell", "style": { "padding": "10px", "font": "Arial" }, "content": "3D Renderings (Not Supported Yet)" }
+              ]
+            }
+          ]
         }
       ]
     },
     { "tag": "Page_Break" },
     {
-      "tag": "Kichwa_Kuu",
-      "style": { "font": "Times New Roman", "size": 14, "bold": true, "align": "center" },
-      "content": "ABSTRACT"
-    },
-    {
-      "tag": "Aya",
-      "style": { "font": "Times New Roman", "size": 12, "spacing": 2, "align": "justify", "textIndent": "0.5in" },
-      "content": "This research proposal explores the shift from non-deterministic AI text formatting tools to absolute, rule-based Abstract Syntax Tree (AST) parsers. By enforcing strict JSON schemas, documents can maintain 100% adherence to complex academic standards such as the Harvard formatting guidelines."
-    },
-    { "tag": "Page_Break" },
-    {
-      "tag": "Kichwa_Dogo",
-      "style": { "font": "Times New Roman", "size": 12, "bold": true, "align": "left", "margin": "20px 0 10px 0" },
-      "content": "1.0 INTRODUCTION"
-    },
-    {
-      "tag": "Aya",
-      "style": { "font": "Times New Roman", "size": 12, "spacing": 2, "align": "justify", "textIndent": "0.5in" },
-      "content": "In recent years, the academic community has struggled with inconsistent document formatting caused by large language models. The traditional requirement of one-inch margins and double-spaced Times New Roman font is often ignored by intelligent agents attempting to be creative."
-    },
-    {
-      "tag": "Blockquote",
-      "style": { "font": "Times New Roman", "size": 12, "spacing": 1, "margin": "20px 1in 20px 1in", "align": "justify" },
-      "content": "A block quotation is an extract consisting of more than 40 words from another author's work. According to strict Harvard guidelines, blockquotes should be single-spaced and indented on both the left and right margins, standing out from the double-spaced paragraphs around them without the use of quotation marks."
-    },
-    {
-      "tag": "Aya",
-      "style": { "font": "Times New Roman", "size": 12, "spacing": 2, "align": "justify", "textIndent": "0.5in" },
-      "content": "To solve this, we introduce the JSON-driven pipeline. It guarantees the rendering of tables, lists, and specific layout boxes without hallucinations."
+      "tag": "Header",
+      "style": { "color": "#6b7280", "font": "Arial", "size": 10, "align": "right", "borderBottom": "1px solid #e5e7eb", "paddingBottom": "10px", "marginBottom": "20px" },
+      "content": "Google Workspace Internal | Page 2"
     },
     {
       "tag": "Kichwa_Dogo",
-      "style": { "font": "Times New Roman", "size": 12, "bold": true, "align": "left", "margin": "20px 0 10px 0" },
-      "content": "1.1 Key Methodologies"
+      "style": { "font": "Arial", "size": 16, "bold": true, "margin": "0 0 20px 0" },
+      "content": "Warning System"
     },
     {
-      "tag": "List",
-      "style": { "font": "Times New Roman", "size": 12, "spacing": 2, "margin": "10px 0 10px 0.5in" },
+      "tag": "Box",
+      "style": { "borderLeft": "4px solid #f59e0b", "padding": "15px 20px", "backgroundColor": "#fffbeb", "display": "flex", "alignItems": "center" },
       "children": [
-        { "tag": "ListItem", "content": "Complete decoupling of content and style." },
-        { "tag": "ListItem", "content": "Recursive node traversal for complex layouts like Nested Tables." },
-        { "tag": "ListItem", "content": "Deterministic CSS injection for PDF conversion." }
+        { "tag": "Icon", "name": "warning", "color": "#f59e0b", "size": 24, "style": { "marginRight": "15px" } },
+        { "tag": "Aya", "style": { "font": "Arial", "size": 12, "color": "#92400e" }, "content": "Please ensure all JSON properties match the schema before executing the renderer to prevent layout collapse." }
       ]
-    },
-    {
-      "tag": "Aya",
-      "style": { "font": "Times New Roman", "size": 12, "spacing": 2, "align": "justify", "margin": "40px 0 0 0" },
-      "content": "_____________________"
-    },
-    {
-      "tag": "Footnote",
-      "style": { "font": "Times New Roman", "size": 10, "spacing": 1, "align": "left" },
-      "content": "1. Chief Engineer, 'Building the AST Renderer,' Google Workspace Journal (2026), p. 45."
     }
   ]
 }`;
@@ -95,7 +109,7 @@ export default function Home() {
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [formattedHtml, setFormattedHtml] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [zenMode, setZenMode] = useState(false); // Controls whether JSON editor is hidden
+  const [zenMode, setZenMode] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -105,6 +119,27 @@ export default function Home() {
       setJsonError(null);
     } catch (err) {
       setJsonError("Invalid JSON Syntax");
+    }
+  };
+
+  // Helper to get SVG paths for Icons
+  const getIconSvg = (name: string, color: string = "currentColor", size: number = 24): string => {
+    const s = size;
+    const c = color;
+    switch(name.toLowerCase()) {
+      case "tick":
+      case "check":
+        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      case "cross":
+      case "x":
+        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      case "warning":
+      case "alert":
+        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+      case "info":
+        return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+      default:
+        return ""; // Fallback
     }
   };
 
@@ -123,13 +158,25 @@ export default function Home() {
       if (node.style.color) nodeStyle += `color: ${node.style.color}; `;
       if (node.style.textIndent) nodeStyle += `text-indent: ${node.style.textIndent}; `;
 
+      // Extended Layout CSS
       if (node.style.border) nodeStyle += `border: ${node.style.border}; `;
+      if (node.style.borderBottom) nodeStyle += `border-bottom: ${node.style.borderBottom}; `;
+      if (node.style.borderLeft) nodeStyle += `border-left: ${node.style.borderLeft}; `;
       if (node.style.backgroundColor) nodeStyle += `background-color: ${node.style.backgroundColor}; `;
       if (node.style.padding) nodeStyle += `padding: ${node.style.padding}; `;
+      if (node.style.paddingBottom) nodeStyle += `padding-bottom: ${node.style.paddingBottom}; `;
       if (node.style.margin) nodeStyle += `margin: ${node.style.margin}; `;
+      if (node.style.marginBottom) nodeStyle += `margin-bottom: ${node.style.marginBottom}; `;
+      if (node.style.marginRight) nodeStyle += `margin-right: ${node.style.marginRight}; `;
       if (node.style.borderRadius) nodeStyle += `border-radius: ${node.style.borderRadius}; `;
       if (node.style.width) nodeStyle += `width: ${node.style.width}; `;
       if (node.style.borderCollapse) nodeStyle += `border-collapse: ${node.style.borderCollapse}; `;
+      if (node.style.display) nodeStyle += `display: ${node.style.display}; `;
+      if (node.style.alignItems) nodeStyle += `align-items: ${node.style.alignItems}; `;
+
+      // Multi-column
+      if (node.style.columns) nodeStyle += `column-count: ${node.style.columns}; `;
+      if (node.style.columnGap) nodeStyle += `column-gap: ${node.style.columnGap}; `;
     }
 
     const contentHtml = node.content ? node.content.replace(/\n/g, '<br/>') : '';
@@ -141,6 +188,13 @@ export default function Home() {
     const innerHtml = contentHtml + childrenHtml;
 
     switch (node.tag) {
+      case "Header":
+        return `<div class="doc-header" style="width: 100%; ${nodeStyle}">${innerHtml}</div>`;
+      case "Columns":
+        return `<div class="doc-columns" style="${nodeStyle}">${innerHtml}</div>`;
+      case "Icon":
+        const iconSvg = getIconSvg(node.name, node.color, node.size);
+        return `<span style="display: inline-flex; align-items: center; justify-content: center; ${nodeStyle}">${iconSvg}</span>`;
       case "TitlePage":
         return `<div class="title-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 800px; ${nodeStyle}">${innerHtml}</div>`;
       case "Kichwa_Kuu":
@@ -169,8 +223,7 @@ export default function Home() {
       case "TableCell":
         return `<td style="${nodeStyle}">${innerHtml}</td>`;
       case "Page_Break":
-        // Closes the current A4 page wrapper and opens a new one to simulate multiple pages in UI
-        return `</div></div><div class="a4-page-wrapper" style="margin-top: 32px; padding: 0; background: transparent;"><div class="html2pdf__page-break" style="page-break-before: always; height: 1px; width: 100%; margin: 0; opacity: 0;"></div><div style="padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm;">`;
+        return `</div></div><div class="a4-page-wrapper" style="margin-top: 32px; padding: 0; background: transparent; position: relative; overflow: hidden;"><div class="html2pdf__page-break" style="page-break-before: always; height: 1px; width: 100%; margin: 0; opacity: 0;"></div><div style="padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm; position: relative;">`;
       default:
         return `<div style="${nodeStyle}">${innerHtml}</div>`;
     }
@@ -188,18 +241,31 @@ export default function Home() {
 
       let htmlOutput = "";
 
+      // Determine if there is a watermark
+      let watermarkHtml = "";
+      if (ast.Metadata && ast.Metadata.Watermark) {
+        watermarkHtml = `<div class="watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(0,0,0,0.05); font-weight: bold; pointer-events: none; z-index: 0; white-space: nowrap;">${ast.Metadata.Watermark}</div>`;
+      }
+
       // Open the first A4 wrapper
-      htmlOutput += `<div class="a4-page-wrapper" style="padding: 0; background: transparent;"><div style="padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm;">`;
+      htmlOutput += `<div class="a4-page-wrapper" style="padding: 0; background: transparent; position: relative; overflow: hidden;"><div style="padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm; position: relative;">`;
+
+      // Inject watermark on first page (for simplicity, we inject it into every newly created wrapper)
+      htmlOutput += watermarkHtml;
 
       ast.Document_Tree.forEach((node: any) => {
-         htmlOutput += renderASTNode(node);
+         // Re-inject watermark if we just hit a page break
+         const nodeHtml = renderASTNode(node);
+         htmlOutput += nodeHtml;
+         if (node.tag === "Page_Break") {
+             htmlOutput += watermarkHtml;
+         }
       });
 
       // Close the final A4 wrapper
       htmlOutput += `</div></div>`;
       setFormattedHtml(htmlOutput);
 
-      // Automatically switch to Zen Mode for Print Preview Experience
       setZenMode(true);
 
     } catch (err) {
@@ -216,8 +282,8 @@ export default function Home() {
       const html2pdf = (await import('html2pdf.js')).default;
 
       const opt = {
-        margin:       [25.4, 25.4, 25.4, 25.4] as [number, number, number, number], // 1 inch margins all around
-        filename:     'Harvard_Academic_Document.pdf',
+        margin:       [25.4, 25.4, 25.4, 25.4] as [number, number, number, number],
+        filename:     'Advanced_Document.pdf',
         image:        { type: 'jpeg' as const, quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', 'blockquote'] },
@@ -248,7 +314,7 @@ export default function Home() {
           <div className="bg-black text-white p-2 rounded-lg">
             <FileJson size={20} />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-black">Academic<span className="text-gray-500">Workspace</span></h1>
+          <h1 className="text-xl font-semibold tracking-tight text-black">Ultimate<span className="text-gray-500">Workspace</span></h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -284,13 +350,13 @@ export default function Home() {
       {/* Main Workspace */}
       <main className={`flex-1 flex ${zenMode ? 'flex-col items-center py-10' : 'flex-col lg:flex-row p-6 gap-8 max-w-[1600px] mx-auto w-full'} transition-all duration-300 print:p-0 print:m-0`}>
 
-        {/* Left Panel: JSON Input (Hidden in Zen Mode) */}
+        {/* Left Panel: JSON Input */}
         {!zenMode && (
           <section className="flex-1 flex flex-col bg-[#1e1e1e] rounded-xl shadow-lg border border-gray-800 overflow-hidden shrink-0 print:hidden transition-opacity duration-300 h-[calc(100vh-120px)]">
             <div className="p-4 border-b border-gray-800 flex items-center justify-between bg-[#2d2d2d]">
               <div className="flex items-center gap-2">
                 <Code2 size={18} className="text-blue-400" />
-                <h2 className="text-sm font-semibold text-gray-200">1. Define AST Configuration</h2>
+                <h2 className="text-sm font-semibold text-gray-200">1. Define Advanced AST Configuration</h2>
               </div>
               {jsonError ? (
                  <span className="text-xs text-red-400 flex items-center gap-1 font-medium bg-red-400/10 px-2 py-1 rounded"><AlertCircle size={14}/> {jsonError}</span>
@@ -307,7 +373,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* Center Execute Button (Hidden in Zen Mode) */}
+        {/* Center Execute Button */}
         {!zenMode && (
           <div className="hidden lg:flex flex-col items-center justify-center -mx-4 z-10 print:hidden">
             <button
@@ -347,7 +413,7 @@ export default function Home() {
                     <FileJson size={32} className="text-gray-300" />
                  </div>
                  <p className="text-sm text-gray-600 font-medium">Workspace is Empty</p>
-                 <p className="text-xs text-gray-400 mt-2 leading-relaxed">Paste your valid Harvard-formatted JSON on the left and click the magic wand.</p>
+                 <p className="text-xs text-gray-400 mt-2 leading-relaxed">Paste your valid advanced JSON on the left and click the magic wand.</p>
                </div>
              )}
           </div>
