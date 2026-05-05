@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, FileText, Sparkles, Settings2, CheckCircle2, ChevronDown, Wand } from "lucide-react";
+import {
+  Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  FileText, Sparkles, Wand2, Scissors, Copy, Clipboard,
+  Image as ImageIcon, PaintBucket, Clock,
+  List, ListOrdered, IndentDecrease, IndentIncrease,
+  ChevronDown, HelpCircle, Save, Undo, Redo, LayoutList, GripVertical
+} from "lucide-react";
 
 type BlockType = 'Heading 1' | 'Heading 2' | 'Paragraph' | 'List Item' | 'Title';
 
@@ -9,257 +15,313 @@ interface DocumentBlock {
   id: string;
   type: BlockType;
   content: string;
-  verified: boolean;
 }
 
-export default function MSWordHybridEditor() {
+export default function MSWordUI() {
   const [activeTab, setActiveTab] = useState('Home');
   const [documentBlocks, setDocumentBlocks] = useState<DocumentBlock[]>([]);
-  const [isVerificationMode, setIsVerificationMode] = useState(false);
   const [inputText, setInputText] = useState("");
   const [pages, setPages] = useState<DocumentBlock[][]>([]);
+  const [showDocMap, setShowDocMap] = useState(false);
 
+  // Auto-detect is now instantly triggered by user via AI Tools, with everything auto-approved
   const handleAutoDetect = () => {
+    if (!inputText.trim()) return;
+
     const lines = inputText.split('\n').filter(line => line.trim() !== '');
     const detectedBlocks = lines.map((line, index) => {
       let type: BlockType = 'Paragraph';
       if (index === 0 && line.length < 50) type = 'Title';
-      else if (line.length < 60 && !line.includes('.')) type = 'Heading 1';
-      else if (line.startsWith('-') || line.match(/^\d+\./)) type = 'List Item';
+      else if (line.length < 60 && !line.includes('.') && line === line.toUpperCase()) type = 'Heading 1';
+      else if (line.length < 60 && !line.includes('.')) type = 'Heading 2';
+      else if (line.trim().startsWith('-') || line.match(/^\d+\./)) type = 'List Item';
 
       return {
-        id: `block-${index}`,
+        id: `block-${index}-${Date.now()}`,
         type,
-        content: line,
-        verified: false
+        content: line
       };
     });
 
     setDocumentBlocks(detectedBlocks);
-    setIsVerificationMode(true);
-  };
-
-  const verifyBlock = (id: string) => {
-    setDocumentBlocks(blocks =>
-      blocks.map(b => b.id === id ? { ...b, verified: true } : b)
-    );
+    setShowDocMap(true);
   };
 
   const changeBlockType = (id: string, newType: BlockType) => {
     setDocumentBlocks(blocks =>
-      blocks.map(b => b.id === id ? { ...b, type: newType, verified: true } : b)
+      blocks.map(b => b.id === id ? { ...b, type: newType } : b)
     );
   };
 
-  // Pagination Engine (Simulated Logic)
+  // Pagination Engine
   useEffect(() => {
-    if (documentBlocks.length === 0 || isVerificationMode) {
+    if (documentBlocks.length === 0) {
        setPages([]);
        return;
     }
 
-    // Very basic pagination: distribute blocks across pages
-    // (Assuming ~6 blocks fit on a standard A4 page for this prototype)
-    const BLOCKS_PER_PAGE = 6;
+    // Distribute blocks across pages (simulating visual heights)
+    const BLOCKS_PER_PAGE = 7;
     const newPages: DocumentBlock[][] = [];
 
     for (let i = 0; i < documentBlocks.length; i += BLOCKS_PER_PAGE) {
       newPages.push(documentBlocks.slice(i, i + BLOCKS_PER_PAGE));
     }
-
-    // Ensure there's always at least one page
-    if (newPages.length === 0) {
-      newPages.push([]);
-    }
     setPages(newPages);
-
-  }, [documentBlocks, isVerificationMode]);
+  }, [documentBlocks]);
 
   return (
-    <div className="h-screen flex flex-col bg-[#f3f2f1] font-sans overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#d4d8e0] font-sans overflow-hidden">
 
-      {/* Top Header / Title Bar */}
-      <header className="h-10 bg-[#2b579a] text-white flex items-center px-4 justify-between select-none">
-        <div className="flex items-center gap-3">
-          <FileText size={18} />
-          <span className="text-sm font-medium">Document1 - AI Word Processor</span>
+      {/* Top Window Chrome (WordPad Style) */}
+      <header className="h-8 bg-white flex items-center px-2 justify-between select-none border-b border-gray-200">
+        <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-[#2b579a] mr-2">
+            <button className="p-1 hover:bg-gray-100"><Save size={14}/></button>
+            <button className="p-1 hover:bg-gray-100"><Undo size={14}/></button>
+            <button className="p-1 hover:bg-gray-100"><Redo size={14}/></button>
+            <div className="w-[1px] h-4 bg-gray-300 mx-1"></div>
+          </div>
+          <FileText size={14} className="text-gray-600" />
+          <span className="text-xs text-gray-700 ml-1">Document - Mashine AI</span>
         </div>
-        <div className="flex items-center bg-[#1e3b70] px-3 py-1 rounded text-xs gap-2 cursor-pointer hover:bg-[#152951]">
-          <Sparkles size={14} className="text-blue-300" />
-          Ask AI Copilot
+        <div className="flex items-center gap-2">
+           <HelpCircle size={14} className="text-gray-500 hover:text-blue-600 cursor-pointer"/>
         </div>
       </header>
 
-      {/* Ribbon Tabs */}
-      <div className="bg-white border-b border-gray-200 px-2 flex text-sm z-20 relative shadow-sm">
-        {['File', 'Home', 'Insert', 'Layout', 'References', 'Review', 'View', 'AI Assistant'].map(tab => (
+      {/* Ribbon Tabs Row */}
+      <div className="bg-white px-0 flex text-[13px] border-b border-gray-200 select-none items-end">
+        <button className="bg-[#2b579a] text-white px-4 py-1 hover:bg-blue-800">File</button>
+        {['Home', 'View', 'AI Tools'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 border-b-2 transition-colors ${activeTab === tab ? 'border-[#2b579a] text-[#2b579a] font-medium' : 'border-transparent text-gray-600 hover:bg-gray-50'}`}
+            className={`px-4 py-1 transition-colors relative border border-transparent ${activeTab === tab ? 'bg-[#f5f6f7] border-gray-200 border-b-[#f5f6f7] z-10' : 'text-gray-600 hover:bg-gray-50'}`}
+            style={activeTab === tab ? { top: '1px' } : {}}
           >
             {tab}
           </button>
         ))}
       </div>
 
-      {/* Ribbon Content */}
-      <div className="bg-[#f3f2f1] h-24 border-b border-gray-300 flex items-center px-4 gap-6 select-none z-10 relative">
+      {/* Ribbon Content Panel (WordPad accurate UI) */}
+      <div className="bg-[#f5f6f7] h-28 border-b border-gray-300 flex items-start px-2 py-1 gap-2 select-none z-10 shadow-sm overflow-x-auto overflow-y-hidden">
         {activeTab === 'Home' && (
           <>
-            <div className="flex flex-col gap-1 border-r border-gray-300 pr-4">
-              <div className="flex items-center gap-1">
-                <select className="border border-gray-300 rounded px-2 py-1 text-sm bg-white outline-none w-32"><option>Calibri</option><option>Arial</option></select>
-                <select className="border border-gray-300 rounded px-2 py-1 text-sm bg-white outline-none"><option>11</option><option>12</option></select>
+            {/* Clipboard Group */}
+            <div className="flex flex-col h-full border-r border-gray-300 pr-2 pl-1">
+              <div className="flex gap-1 items-start mt-1">
+                <button className="flex flex-col items-center justify-center p-1 hover:bg-blue-100 rounded text-gray-700 h-[68px] w-12">
+                  <Clipboard size={28} className="text-yellow-600 mb-1" />
+                  <span className="text-[10px]">Paste</span>
+                </button>
+                <div className="flex flex-col gap-0.5">
+                  <button className="flex items-center gap-1 hover:bg-blue-100 p-1 rounded text-gray-700 text-xs w-16">
+                    <Scissors size={14} className="text-blue-600"/> Cut
+                  </button>
+                  <button className="flex items-center gap-1 hover:bg-blue-100 p-1 rounded text-gray-700 text-xs w-16">
+                    <Copy size={14} className="text-blue-600"/> Copy
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-gray-700">
-                <button className="p-1 hover:bg-gray-200 rounded"><Bold size={16} /></button>
-                <button className="p-1 hover:bg-gray-200 rounded"><Italic size={16} /></button>
-                <button className="p-1 hover:bg-gray-200 rounded"><Underline size={16} /></button>
-              </div>
-              <span className="text-[10px] text-gray-500 text-center w-full mt-1">Font</span>
+              <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-0.5 font-medium">Clipboard</span>
             </div>
-            <div className="flex flex-col gap-1 border-r border-gray-300 pr-4">
-               <div className="flex items-center gap-1 text-gray-700">
-                <button className="p-1 hover:bg-gray-200 rounded"><AlignLeft size={16} /></button>
-                <button className="p-1 hover:bg-gray-200 rounded"><AlignCenter size={16} /></button>
-                <button className="p-1 hover:bg-gray-200 rounded"><AlignRight size={16} /></button>
+
+            {/* Font Group */}
+            <div className="flex flex-col h-full border-r border-gray-300 pr-2 pl-2">
+              <div className="flex flex-col gap-1 mt-1">
+                <div className="flex items-center gap-1">
+                  <div className="flex items-center bg-white border border-gray-300 rounded px-2 py-0.5 text-xs w-32 justify-between cursor-pointer hover:border-blue-400">
+                    <span>Calibri</span> <ChevronDown size={12}/>
+                  </div>
+                  <div className="flex items-center bg-white border border-gray-300 rounded px-2 py-0.5 text-xs w-12 justify-between cursor-pointer hover:border-blue-400">
+                    <span>11</span> <ChevronDown size={12}/>
+                  </div>
+                  <div className="flex gap-0.5 text-[#2b579a]">
+                     <button className="px-1.5 hover:bg-blue-100 rounded font-bold text-sm">A<span className="text-[10px] align-top">^</span></button>
+                     <button className="px-1.5 hover:bg-blue-100 rounded font-bold text-xs">A<span className="text-[10px] align-top">v</span></button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-gray-700 mt-0.5">
+                  <button className="p-1 hover:bg-blue-100 rounded"><Bold size={14} /></button>
+                  <button className="p-1 hover:bg-blue-100 rounded"><Italic size={14} /></button>
+                  <button className="p-1 hover:bg-blue-100 rounded"><Underline size={14} /></button>
+                  <div className="w-[1px] h-4 bg-gray-300 mx-1"></div>
+                  <button className="p-1 hover:bg-blue-100 rounded font-serif italic text-xs px-1.5">ab<span className="line-through text-[10px]">c</span></button>
+                  <button className="p-1 hover:bg-blue-100 rounded font-bold text-xs">x<sub className="text-[9px]">2</sub></button>
+                  <button className="p-1 hover:bg-blue-100 rounded font-bold text-xs">x<sup className="text-[9px]">2</sup></button>
+                  <div className="w-[1px] h-4 bg-gray-300 mx-1"></div>
+                  <button className="p-1 hover:bg-blue-100 rounded text-red-600 font-bold underline decoration-red-600">A</button>
+                </div>
               </div>
-              <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-1">Paragraph</span>
+              <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-0.5 font-medium">Font</span>
+            </div>
+
+            {/* Paragraph Group */}
+            <div className="flex flex-col h-full border-r border-gray-300 pr-2 pl-2">
+              <div className="flex flex-col gap-1 mt-1">
+                 <div className="flex items-center gap-1 text-gray-700">
+                   <button className="p-1 hover:bg-blue-100 rounded"><IndentDecrease size={14} /></button>
+                   <button className="p-1 hover:bg-blue-100 rounded"><IndentIncrease size={14} /></button>
+                   <div className="w-[1px] h-4 bg-gray-300 mx-1"></div>
+                   <button className="p-1 hover:bg-blue-100 rounded"><List size={14} /></button>
+                   <button className="p-1 hover:bg-blue-100 rounded"><ListOrdered size={14} /></button>
+                 </div>
+                 <div className="flex items-center gap-1 text-gray-700 mt-0.5">
+                  <button className="p-1 bg-blue-100 rounded border border-blue-200"><AlignLeft size={14} /></button>
+                  <button className="p-1 hover:bg-blue-100 rounded"><AlignCenter size={14} /></button>
+                  <button className="p-1 hover:bg-blue-100 rounded"><AlignRight size={14} /></button>
+                  <button className="p-1 hover:bg-blue-100 rounded"><AlignJustify size={14} /></button>
+                </div>
+              </div>
+              <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-0.5 font-medium">Paragraph</span>
+            </div>
+
+            {/* Insert Group */}
+            <div className="flex flex-col h-full border-r border-gray-300 pr-2 pl-2">
+               <div className="flex gap-2 items-start mt-1">
+                 <button className="flex flex-col items-center justify-center p-1 hover:bg-blue-100 rounded text-gray-700 h-[68px]">
+                  <ImageIcon size={24} className="text-green-600 mb-1" />
+                  <span className="text-[10px]">Picture</span>
+                 </button>
+                 <button className="flex flex-col items-center justify-center p-1 hover:bg-blue-100 rounded text-gray-700 h-[68px]">
+                  <PaintBucket size={24} className="text-blue-500 mb-1" />
+                  <span className="text-[10px]">Paint</span>
+                 </button>
+                 <button className="flex flex-col items-center justify-center p-1 hover:bg-blue-100 rounded text-gray-700 h-[68px]">
+                  <Clock size={24} className="text-gray-500 mb-1" />
+                  <span className="text-[10px]">Date/Time</span>
+                 </button>
+               </div>
+               <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-0.5 font-medium">Insert</span>
+            </div>
+
+            {/* View Map Toggle */}
+             <div className="flex flex-col h-full pr-2 pl-2 justify-center">
+                 <button
+                   onClick={() => setShowDocMap(!showDocMap)}
+                   className={`flex flex-col items-center justify-center p-2 rounded text-gray-700 border ${showDocMap ? 'bg-blue-100 border-blue-300' : 'hover:bg-blue-50 border-transparent'}`}
+                 >
+                  <LayoutList size={24} className="text-[#2b579a] mb-1" />
+                  <span className="text-[10px] font-semibold text-[#2b579a]">Nav Map</span>
+                 </button>
             </div>
           </>
         )}
-        {activeTab === 'AI Assistant' && (
-           <div className="flex gap-4">
-             <button className="flex flex-col items-center justify-center p-2 hover:bg-blue-100 text-blue-800 rounded">
-               <Wand size={24} className="mb-1" />
-               <span className="text-xs">Clone Format</span>
-             </button>
-             <button className="flex flex-col items-center justify-center p-2 hover:bg-purple-100 text-purple-800 rounded">
-               <FileText size={24} className="mb-1" />
-               <span className="text-xs">Chat w/ Docs</span>
-             </button>
+
+        {activeTab === 'AI Tools' && (
+           <div className="flex h-full py-1 gap-2">
+             <div className="flex flex-col h-full border-r border-gray-300 pr-4 pl-2">
+                 <button
+                   onClick={handleAutoDetect}
+                   className="flex flex-col items-center justify-center px-4 py-1 hover:bg-blue-100 text-blue-800 rounded border border-transparent hover:border-blue-200 h-[68px]"
+                 >
+                   <Sparkles size={28} className="mb-1 text-purple-600" />
+                   <span className="text-xs font-semibold">Organize & Map Doc</span>
+                 </button>
+                 <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-0.5 font-medium">Structure</span>
+             </div>
+             <div className="flex flex-col h-full border-r border-gray-300 pr-4 pl-2">
+                 <div className="flex gap-2 h-[68px] items-center">
+                   <button className="flex flex-col items-center justify-center p-2 hover:bg-blue-100 text-blue-800 rounded">
+                     <Wand2 size={24} className="mb-1 text-blue-600" />
+                     <span className="text-xs">Clone Style</span>
+                   </button>
+                   <button className="flex flex-col items-center justify-center p-2 hover:bg-blue-100 text-blue-800 rounded">
+                     <FileText size={24} className="mb-1 text-green-600" />
+                     <span className="text-xs">Chat w/ Pdfs</span>
+                   </button>
+                 </div>
+                 <span className="text-[10px] text-gray-500 text-center w-full mt-auto mb-0.5 font-medium">Magic Agents</span>
+             </div>
            </div>
         )}
       </div>
 
-      {/* Main Workspace Area */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main Workspace Area (Breathable Layout) */}
+      <div className="flex-1 flex overflow-hidden relative">
 
-        {/* Left Side: Verification Panel (Document Map) */}
-        {isVerificationMode && (
-          <aside className="w-80 bg-white border-r border-gray-300 shadow-xl z-20 flex flex-col animate-in slide-in-from-left duration-300">
-            <div className="p-4 border-b border-gray-200 bg-blue-50 flex items-start gap-3">
-               <div className="bg-blue-600 rounded-full p-1.5 text-white mt-1"><Wand size={16}/></div>
-               <div>
-                 <h3 className="text-sm font-semibold text-blue-900">I've organized your document!</h3>
-                 <p className="text-xs text-blue-700 mt-1">Please review the structure below. Click ✓ if correct, or ⚙ to adjust.</p>
-               </div>
+        {/* Left Side: Passive Navigation Map (No forced clicking required) */}
+        {showDocMap && documentBlocks.length > 0 && (
+          <aside className="w-64 bg-[#fbfbfb] border-r border-gray-300 shadow-sm z-10 flex flex-col">
+            <div className="p-2 border-b border-gray-200 bg-white">
+               <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Navigation</h3>
+               <p className="text-[10px] text-gray-500">Document mapped successfully.</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {documentBlocks.map((block) => (
-                <div key={block.id} className={`p-3 rounded-lg border text-sm transition-colors ${block.verified ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200 hover:border-blue-300 shadow-sm'}`}>
+                <div key={block.id} className="group relative flex items-start gap-2 p-1.5 hover:bg-gray-100 rounded border border-transparent hover:border-gray-200">
+                  <div className="mt-0.5 cursor-grab opacity-30 group-hover:opacity-100"><GripVertical size={12}/></div>
+                  <div className="flex-1 min-w-0">
+                     <p className={`text-[11px] truncate ${block.type === 'Title' ? 'font-bold text-black' : block.type.includes('Heading') ? 'font-semibold text-gray-800' : 'text-gray-500'}`}>
+                       {block.content}
+                     </p>
 
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`block-type-badge text-[10px] uppercase font-bold px-2 py-0.5 rounded ${block.verified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {block.type}
-                      </span>
-                    </div>
-
-                    {!block.verified && (
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => verifyBlock(block.id)} className="p-1 text-green-600 hover:bg-green-100 rounded" title="Looks Good">
-                          <CheckCircle2 size={18} />
-                        </button>
-                        <div className="relative group">
-                           <button className="p-1 text-gray-500 hover:bg-gray-100 rounded flex items-center" title="Adjust">
-                             <Settings2 size={16} /> <ChevronDown size={12}/>
-                           </button>
-                           {/* Simple dropdown simulation */}
-                           <div className="hidden group-hover:block absolute right-0 top-full mt-1 bg-white border rounded shadow-lg z-50 w-32 py-1">
-                             {(['Title', 'Heading 1', 'Heading 2', 'Paragraph', 'List Item'] as BlockType[]).map(t => (
-                               <div key={t} onClick={() => changeBlockType(block.id, t)} className="px-3 py-1.5 hover:bg-blue-50 cursor-pointer text-xs text-gray-700">{t}</div>
-                             ))}
-                           </div>
-                        </div>
-                      </div>
-                    )}
-                    {block.verified && <CheckCircle2 size={16} className="text-green-500" />}
+                     {/* Hover to reveal block type adjustments (Passive verification) */}
+                     <div className="hidden group-hover:flex items-center gap-1 mt-1">
+                        <span className="text-[9px] bg-blue-50 text-blue-700 px-1 rounded border border-blue-100">{block.type}</span>
+                        <select
+                          className="text-[9px] border-none bg-transparent outline-none text-gray-500 cursor-pointer"
+                          value={block.type}
+                          onChange={(e) => changeBlockType(block.id, e.target.value as BlockType)}
+                        >
+                          <option>Title</option>
+                          <option>Heading 1</option>
+                          <option>Heading 2</option>
+                          <option>Paragraph</option>
+                          <option>List Item</option>
+                        </select>
+                     </div>
                   </div>
-
-                  <p className="text-gray-600 line-clamp-2 text-xs italic">"{block.content}"</p>
                 </div>
               ))}
-            </div>
-
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-               <button
-                 disabled={!documentBlocks.every(b => b.verified)}
-                 onClick={() => setIsVerificationMode(false)}
-                 className={`w-full py-2 rounded font-medium text-sm transition-colors ${documentBlocks.every(b => b.verified) ? 'bg-[#2b579a] text-white hover:bg-blue-800 shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-               >
-                 Done! Build My Document
-               </button>
             </div>
           </aside>
         )}
 
-        {/* Center: A4 Pages Area (Continuous Scroll) */}
-        <main className="flex-1 bg-[#e1e1e1] overflow-y-auto p-8 flex flex-col items-center gap-8 shadow-inner">
+        {/* Center: Breathable A4 Layout Area */}
+        <main className="flex-1 bg-[#d4d8e0] overflow-y-auto flex flex-col items-center">
 
-          {documentBlocks.length === 0 && !isVerificationMode ? (
-             <div className="bg-white w-[21cm] min-h-[29.7cm] shadow-md p-24 flex flex-col relative shrink-0">
-                <h1 className="text-2xl text-gray-300 font-light mb-8 border-b pb-4">Paste your raw text here to begin...</h1>
+          {documentBlocks.length === 0 ? (
+             <div className="mt-8 mb-8 w-[816px] min-h-[1056px] bg-white shadow-sm border border-gray-300 flex flex-col shrink-0 outline-none p-[1in]">
                 <textarea
-                  className="w-full flex-1 resize-none outline-none text-gray-700 text-lg leading-relaxed bg-transparent"
-                  placeholder="The Behavior of Tanzanian Spiders&#10;&#10;Introduction&#10;Spiders are very interesting creatures...&#10;- Eight legs&#10;- Produce venom&#10;&#10;Methodology&#10;We tracked 40 spiders."
+                  className="w-full flex-1 resize-none outline-none text-[11pt] font-sans text-black leading-relaxed"
+                  placeholder="Paste your raw text here..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
+                  style={{ fontFamily: 'Calibri, Arial, sans-serif' }}
                 />
-                <button
-                  onClick={handleAutoDetect}
-                  disabled={inputText.length < 5}
-                  className="mt-8 self-end bg-[#2b579a] text-white px-6 py-3 rounded-md shadow-lg hover:bg-blue-800 disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Sparkles size={18}/> Auto-Detect Structure
-                </button>
              </div>
           ) : (
-             <>
-               {!isVerificationMode && documentBlocks.every(b => b.verified) && (
-                 <div className="fixed top-36 right-8 bg-green-100 border border-green-300 text-green-800 text-sm px-4 py-2 rounded-md flex items-center gap-2 font-medium shadow-lg z-50 animate-in fade-in zoom-in">
-                   <CheckCircle2 size={18}/> Perfect AST Document Map Synchronized
-                 </div>
-               )}
-
-               {/* Render actual physical A4 pages separated by gaps */}
+             <div className="py-8 flex flex-col gap-6">
+               {/* Render mapped A4 pages */}
                {pages.map((pageBlocks, pageIndex) => (
-                  <div key={`page-${pageIndex}`} className="bg-white w-[21cm] h-[29.7cm] shadow-lg p-24 flex flex-col relative shrink-0">
-                     {/* Visual Page Break Indicator */}
-                     {pageIndex > 0 && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 font-semibold uppercase tracking-widest bg-[#e1e1e1] px-2">Page Break</div>
-                     )}
+                  <div key={`page-${pageIndex}`} className="w-[816px] min-h-[1056px] bg-white shadow-sm border border-gray-300 flex flex-col shrink-0 relative px-[1in] py-[1in] font-sans text-black">
+
+                     {/* Subtle print margins indicator (optional) */}
+                     <div className="absolute top-0 left-[1in] w-[1px] h-4 bg-gray-200"></div>
+                     <div className="absolute top-0 right-[1in] w-[1px] h-4 bg-gray-200"></div>
 
                      {pageBlocks.map((block) => {
                        switch(block.type) {
                          case 'Title':
-                           return <h1 key={block.id} className="text-4xl font-bold mb-8 text-center text-[#2b579a]">{block.content}</h1>;
+                           return <h1 key={block.id} className="text-3xl font-bold mb-6 text-black">{block.content}</h1>;
                          case 'Heading 1':
-                           return <h2 key={block.id} className="text-2xl font-bold mt-8 mb-4 border-b border-gray-200 pb-2 text-gray-800">{block.content}</h2>;
+                           return <h2 key={block.id} className="text-[16pt] font-bold mt-6 mb-2 text-[#2b579a]">{block.content}</h2>;
                          case 'Heading 2':
-                           return <h3 key={block.id} className="text-xl font-semibold mt-6 mb-3 text-gray-700">{block.content}</h3>;
+                           return <h3 key={block.id} className="text-[14pt] font-semibold mt-4 mb-2 text-[#2b579a]">{block.content}</h3>;
                          case 'List Item':
-                           return <li key={block.id} className="ml-6 mb-2 text-gray-800 text-lg">{block.content.replace(/^[-1-9.]+\s*/, '')}</li>;
+                           return <div key={block.id} className="flex mb-1 text-[11pt] leading-snug"><span className="mr-2 text-black">•</span><span className="text-black">{block.content.replace(/^[-1-9.]+\s*/, '')}</span></div>;
                          case 'Paragraph':
                          default:
-                           return <p key={block.id} className="mb-4 text-gray-800 text-lg leading-relaxed">{block.content}</p>;
+                           return <p key={block.id} className="mb-3 text-[11pt] leading-snug text-black">{block.content}</p>;
                        }
                      })}
                   </div>
                ))}
-             </>
+             </div>
           )}
 
         </main>
@@ -267,11 +329,10 @@ export default function MSWordHybridEditor() {
       </div>
 
       {/* Bottom Status Bar */}
-      <footer className="h-6 bg-[#2b579a] text-white text-[11px] flex items-center justify-between px-4 select-none z-20 relative">
+      <footer className="h-6 bg-[#f5f6f7] border-t border-gray-300 text-gray-600 text-[11px] flex items-center justify-between px-4 select-none z-20">
         <div className="flex items-center gap-4">
           <span>Page {pages.length > 0 ? 1 : 0} of {pages.length}</span>
-          <span>{documentBlocks.length} Blocks</span>
-          <span className="flex items-center gap-1"><CheckCircle2 size={12}/> Map Sync</span>
+          <span className="px-2 border-l border-r border-gray-300">{documentBlocks.length} Blocks Mapped</span>
         </div>
         <div className="flex items-center gap-4">
           <span>100%</span>
