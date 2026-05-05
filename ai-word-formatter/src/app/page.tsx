@@ -42,19 +42,48 @@ export default function NoCodeBuilder() {
   const [idea, setIdea] = useState("");
   const [chatInput, setChatInput] = useState("");
   const [loadingText, setLoadingText] = useState("Analyzing your idea...");
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [featureImages, setFeatureImages] = useState<string[]>([]);
   const [chatHistory, setChatHistory] = useState([
     { role: "assistant", content: "I've built the initial version based on your idea. What would you like to tweak?" }
   ]);
 
+  const fetchUnsplashImages = async (query: string) => {
+    try {
+      // Extract keywords simply (first 2 words > 3 chars)
+      const words = query.split(/\s+/).filter(w => w.length > 3).slice(0, 2);
+      const searchQuery = words.length > 0 ? words.join(" ") : "minimalist design";
+
+      const response = await fetch(`/api/unsplash?query=${encodeURIComponent(searchQuery)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.results && data.results.length >= 4) {
+          setHeroImage(data.results[0].urls.regular);
+          setFeatureImages([
+            data.results[1].urls.small,
+            data.results[2].urls.small,
+            data.results[3].urls.small
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch images", error);
+    }
+  };
+
   // Handle generation flow
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!idea.trim()) return;
     setStage("generating");
 
-    // Simulate generation steps
-    setTimeout(() => setLoadingText("Designing clean minimalist UI..."), 1500);
-    setTimeout(() => setLoadingText("Writing components..."), 3000);
-    setTimeout(() => setLoadingText("Setting up routing..."), 4500);
+    setLoadingText("Analyzing your idea...");
+
+    // Start fetching images concurrently with the fake UI generation delays
+    fetchUnsplashImages(idea);
+
+    setTimeout(() => setLoadingText("Designing premium UI..."), 1500);
+    setTimeout(() => setLoadingText("Writing clean components..."), 3000);
+    setTimeout(() => setLoadingText("Sourcing high-quality imagery..."), 4500);
     setTimeout(() => setStage("preview"), 6000);
   };
 
@@ -249,62 +278,81 @@ export default function NoCodeBuilder() {
               </div>
 
               {/* Right Side: Live Preview Area */}
-              <div className="flex-1 bg-[#f1f5f9] flex flex-col relative overflow-hidden">
+              <div className="flex-1 bg-[#ebebe9] flex flex-col relative overflow-hidden">
                 {/* Preview Toolbar */}
-                <div className="h-12 bg-white/80 backdrop-blur border-b border-slate-200 flex items-center justify-center gap-4 px-4 sticky top-0 z-10">
-                  <div className="flex bg-slate-100 p-1 rounded-lg">
-                    <button className="px-3 py-1 bg-white shadow-sm rounded-md text-slate-700"><MonitorSmartphone size={16}/></button>
-                    <button className="px-3 py-1 text-slate-500 hover:text-slate-700"><MonitorSmartphone size={16} className="rotate-90"/></button>
+                <div className="h-12 bg-[#fdfcf8]/90 backdrop-blur border-b border-[#e5e5ea] flex items-center justify-center gap-4 px-4 sticky top-0 z-10 shadow-sm">
+                  <div className="flex bg-[#f2f2f7] p-1 rounded-lg">
+                    <button className="px-3 py-1 bg-white shadow-sm rounded-md text-[#1d1d1f]"><MonitorSmartphone size={16}/></button>
+                    <button className="px-3 py-1 text-[#86868b] hover:text-[#1d1d1f]"><MonitorSmartphone size={16} className="rotate-90"/></button>
                   </div>
-                  <div className="w-[1px] h-4 bg-slate-300"></div>
-                  <button className="text-sm font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1.5"><RefreshCw size={14}/> Refresh</button>
+                  <div className="w-[1px] h-4 bg-[#d2d2d7]"></div>
+                  <button className="text-sm font-medium text-[#86868b] hover:text-[#1d1d1f] flex items-center gap-1.5 transition-colors"><RefreshCw size={14}/> Refresh</button>
                 </div>
 
-                {/* The Mock App Preview */}
-                <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
-                  <div className="w-full max-w-5xl bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 overflow-hidden min-h-[800px] flex flex-col">
+                {/* The Mock App Preview (Premium Cream/Apple Aesthetic) */}
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center selection:bg-blue-200">
+                  <div className="w-full max-w-5xl bg-[#fdfcf8] rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] border border-[#e5e5ea] overflow-hidden min-h-[800px] flex flex-col font-sans">
 
                     {/* Mock Website Header */}
-                    <div className="h-16 border-b border-slate-100 flex items-center justify-between px-8">
-                      <div className="text-xl font-bold tracking-tighter text-slate-900">YourApp.</div>
-                      <div className="flex gap-6 text-sm font-medium text-slate-500">
-                        <span className="text-slate-900">Home</span>
-                        <span>Features</span>
-                        <span>About</span>
-                        <span>Contact</span>
+                    <div className="h-20 border-b border-[#e5e5ea]/50 flex items-center justify-between px-10">
+                      <div className="text-xl font-semibold tracking-tight text-[#1d1d1f]">YourApp.</div>
+                      <div className="flex gap-8 text-sm font-medium text-[#86868b]">
+                        <span className="text-[#1d1d1f] cursor-pointer">Overview</span>
+                        <span className="hover:text-[#1d1d1f] transition-colors cursor-pointer">Features</span>
+                        <span className="hover:text-[#1d1d1f] transition-colors cursor-pointer">Gallery</span>
+                        <span className="hover:text-[#1d1d1f] transition-colors cursor-pointer">Contact</span>
                       </div>
-                      <div className="px-5 py-2 bg-slate-900 text-white rounded-full text-sm font-medium">Get Started</div>
+                      <div className="px-5 py-2 bg-[#1d1d1f] hover:bg-black transition-colors text-white rounded-full text-sm font-medium cursor-pointer">Buy Now</div>
                     </div>
 
                     {/* Mock Website Hero */}
-                    <div className="flex-1 p-16 flex flex-col items-center text-center justify-center">
-                      <div className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-medium mb-6">
-                        ✨ Generated specifically for you
-                      </div>
-                      <h1 className="text-6xl font-bold tracking-tight text-slate-900 mb-6 max-w-3xl leading-tight">
-                        {idea ? (idea.length > 50 ? idea.substring(0, 50) + "..." : idea) : "A beautiful, minimalist design for your next big idea."}
+                    <div className="flex-1 px-10 py-20 flex flex-col items-center text-center justify-center relative">
+                      <h1 className="text-6xl md:text-7xl font-semibold tracking-tight text-[#1d1d1f] mb-6 max-w-4xl leading-tight">
+                        {idea ? (idea.length > 60 ? idea.substring(0, 60) + "..." : idea) : "Pro design. Unbelievable simplicity."}
                       </h1>
-                      <p className="text-xl text-slate-500 mb-10 max-w-2xl">
-                        This is a live preview of your generated application. It features a clean, airy design language with ample whitespace and crisp typography.
+                      <p className="text-2xl text-[#86868b] mb-12 max-w-2xl font-light">
+                        A stunningly minimalist canvas, powered by advanced AI. Designed to let your content breathe.
                       </p>
-                      <div className="flex gap-4">
-                        <button className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium text-lg hover:bg-blue-700 transition-colors shadow-sm">
+
+                      {heroImage ? (
+                        <div className="w-full max-w-4xl h-[400px] rounded-3xl overflow-hidden shadow-2xl mb-12 border border-[#e5e5ea]/30 relative group">
+                           <img src={heroImage} alt="Hero representation" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        </div>
+                      ) : (
+                        <div className="w-full max-w-4xl h-[400px] bg-[#f5f5f7] rounded-3xl mb-12 flex items-center justify-center border border-[#e5e5ea]">
+                          <span className="text-[#86868b]">Image placeholder</span>
+                        </div>
+                      )}
+
+                      <div className="flex gap-6">
+                        <button className="px-8 py-4 bg-[#0071e3] text-white rounded-full font-medium text-lg hover:bg-[#0077ED] transition-colors shadow-sm">
                           Start Building
                         </button>
-                        <button className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-medium text-lg hover:border-slate-300 hover:bg-slate-50 transition-colors">
-                          View Documentation
+                        <button className="px-8 py-4 bg-transparent text-[#0071e3] rounded-full font-medium text-lg hover:underline transition-all">
+                          Learn more &gt;
                         </button>
                       </div>
                     </div>
 
                     {/* Mock Website Features */}
-                    <div className="bg-slate-50 p-16 border-t border-slate-100">
-                      <div className="grid grid-cols-3 gap-8">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
-                            <div className="w-12 h-12 bg-blue-50 rounded-xl mb-6"></div>
-                            <h3 className="text-xl font-semibold mb-3 text-slate-900">Clean Feature {i}</h3>
-                            <p className="text-slate-500 leading-relaxed">Minimalist design focuses only on what&apos;s absolutely necessary, providing a superior user experience without clutter.</p>
+                    <div className="bg-white px-10 py-24 border-t border-[#e5e5ea]/50">
+                      <div className="text-center mb-16">
+                        <h2 className="text-4xl font-semibold tracking-tight text-[#1d1d1f]">Brilliant down to the details.</h2>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[0, 1, 2].map((i) => (
+                          <div key={i} className="bg-[#f5f5f7] p-8 rounded-3xl group hover:shadow-lg transition-all duration-300">
+                            {featureImages[i] ? (
+                              <div className="w-full h-40 bg-[#e5e5ea] rounded-xl mb-6 overflow-hidden">
+                                <img src={featureImages[i]} alt={`Feature ${i+1}`} className="w-full h-full object-cover" />
+                              </div>
+                            ) : (
+                              <div className="w-full h-40 bg-[#e5e5ea] rounded-xl mb-6 flex items-center justify-center">
+                                <span className="text-[#86868b] text-sm">Image {i+1}</span>
+                              </div>
+                            )}
+                            <h3 className="text-xl font-semibold mb-3 text-[#1d1d1f]">Premium Feature {i + 1}</h3>
+                            <p className="text-[#86868b] leading-relaxed text-[15px]">Focus strictly on what matters. Exquisite typography and subtle contrast elevate the experience.</p>
                           </div>
                         ))}
                       </div>
