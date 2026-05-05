@@ -7,7 +7,7 @@ export default function Home() {
   const defaultJson = `{
   "Metadata": {
     "Type": "Advanced Document with Graphics",
-    "Engine": "Ultimate AST Parser v4.0",
+    "Engine": "Ultimate AST Parser v5.0",
     "Margins": "1 inch",
     "Watermark": "CONFIDENTIAL"
   },
@@ -40,7 +40,7 @@ export default function Home() {
     },
     {
       "tag": "Box",
-      "style": { "border": "1px solid #e5e7eb", "padding": "20px", "margin": "40px 0", "borderRadius": "8px", "backgroundColor": "#f9fafb" },
+      "style": { "border": "1px solid #e5e7eb", "padding": "20px", "margin": "40px 0", "borderRadius": "8px", "backgroundColor": "#f9fafb", "pageBreakInside": "avoid" },
       "children": [
         {
           "tag": "Kichwa_Dogo",
@@ -96,7 +96,7 @@ export default function Home() {
     },
     {
       "tag": "Box",
-      "style": { "borderLeft": "4px solid #f59e0b", "padding": "15px 20px", "backgroundColor": "#fffbeb", "display": "flex", "alignItems": "center" },
+      "style": { "borderLeft": "4px solid #f59e0b", "padding": "15px 20px", "backgroundColor": "#fffbeb", "display": "flex", "alignItems": "center", "pageBreakInside": "avoid" },
       "children": [
         { "tag": "Icon", "name": "warning", "color": "#f59e0b", "size": 24, "style": { "marginRight": "15px" } },
         { "tag": "Aya", "style": { "font": "Arial", "size": 12, "color": "#92400e" }, "content": "Please ensure all JSON properties match the schema before executing the renderer to prevent layout collapse." }
@@ -108,7 +108,6 @@ export default function Home() {
   const [jsonInput, setJsonInput] = useState(defaultJson);
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [formattedHtml, setFormattedHtml] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
   const [zenMode, setZenMode] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -122,7 +121,6 @@ export default function Home() {
     }
   };
 
-  // Helper to get SVG paths for Icons
   const getIconSvg = (name: string, color: string = "currentColor", size: number = 24): string => {
     const s = size;
     const c = color;
@@ -139,7 +137,7 @@ export default function Home() {
       case "info":
         return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
       default:
-        return ""; // Fallback
+        return "";
     }
   };
 
@@ -158,7 +156,6 @@ export default function Home() {
       if (node.style.color) nodeStyle += `color: ${node.style.color}; `;
       if (node.style.textIndent) nodeStyle += `text-indent: ${node.style.textIndent}; `;
 
-      // Extended Layout CSS
       if (node.style.border) nodeStyle += `border: ${node.style.border}; `;
       if (node.style.borderBottom) nodeStyle += `border-bottom: ${node.style.borderBottom}; `;
       if (node.style.borderLeft) nodeStyle += `border-left: ${node.style.borderLeft}; `;
@@ -173,8 +170,8 @@ export default function Home() {
       if (node.style.borderCollapse) nodeStyle += `border-collapse: ${node.style.borderCollapse}; `;
       if (node.style.display) nodeStyle += `display: ${node.style.display}; `;
       if (node.style.alignItems) nodeStyle += `align-items: ${node.style.alignItems}; `;
+      if (node.style.pageBreakInside) nodeStyle += `break-inside: ${node.style.pageBreakInside}; page-break-inside: ${node.style.pageBreakInside}; `;
 
-      // Multi-column
       if (node.style.columns) nodeStyle += `column-count: ${node.style.columns}; `;
       if (node.style.columnGap) nodeStyle += `column-gap: ${node.style.columnGap}; `;
     }
@@ -196,7 +193,7 @@ export default function Home() {
         const iconSvg = getIconSvg(node.name, node.color, node.size);
         return `<span style="display: inline-flex; align-items: center; justify-content: center; ${nodeStyle}">${iconSvg}</span>`;
       case "TitlePage":
-        return `<div class="title-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 800px; ${nodeStyle}">${innerHtml}</div>`;
+        return `<div class="title-page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; break-after: page; page-break-after: always; ${nodeStyle}">${innerHtml}</div>`;
       case "Kichwa_Kuu":
       case "H1":
         return `<h1 style="${nodeStyle}">${innerHtml}</h1>`;
@@ -223,7 +220,8 @@ export default function Home() {
       case "TableCell":
         return `<td style="${nodeStyle}">${innerHtml}</td>`;
       case "Page_Break":
-        return `</div></div><div class="a4-page-wrapper" style="margin-top: 32px; padding: 0; background: transparent; position: relative; overflow: hidden;"><div class="html2pdf__page-break" style="page-break-before: always; height: 1px; width: 100%; margin: 0; opacity: 0;"></div><div style="padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm; position: relative;">`;
+        // Native CSS Page Break for Browser Print
+        return `<div class="native-page-break" style="break-before: page; page-break-before: always; width: 100%; height: 0;"></div>`;
       default:
         return `<div style="${nodeStyle}">${innerHtml}</div>`;
     }
@@ -241,61 +239,26 @@ export default function Home() {
 
       let htmlOutput = "";
 
-      // Determine if there is a watermark
       let watermarkHtml = "";
       if (ast.Metadata && ast.Metadata.Watermark) {
-        watermarkHtml = `<div class="watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(0,0,0,0.05); font-weight: bold; pointer-events: none; z-index: 0; white-space: nowrap;">${ast.Metadata.Watermark}</div>`;
+        // Fixed watermark to appear consistently across printed pages
+        watermarkHtml = `<div class="watermark print-watermark" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(0,0,0,0.05); font-weight: bold; pointer-events: none; z-index: -1; white-space: nowrap;">${ast.Metadata.Watermark}</div>`;
       }
 
-      // Open the first A4 wrapper
-      htmlOutput += `<div class="a4-page-wrapper" style="padding: 0; background: transparent; position: relative; overflow: hidden;"><div style="padding: 96px; background: white; color: black; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); min-height: 29.7cm; position: relative;">`;
-
-      // Inject watermark on first page (for simplicity, we inject it into every newly created wrapper)
+      htmlOutput += `<div class="document-flow">`;
       htmlOutput += watermarkHtml;
 
       ast.Document_Tree.forEach((node: any) => {
-         // Re-inject watermark if we just hit a page break
-         const nodeHtml = renderASTNode(node);
-         htmlOutput += nodeHtml;
-         if (node.tag === "Page_Break") {
-             htmlOutput += watermarkHtml;
-         }
+         htmlOutput += renderASTNode(node);
       });
 
-      // Close the final A4 wrapper
-      htmlOutput += `</div></div>`;
+      htmlOutput += `</div>`;
       setFormattedHtml(htmlOutput);
 
       setZenMode(true);
 
     } catch (err) {
       setJsonError("Engine failed to parse AST JSON.");
-    }
-  };
-
-  const handleExportPDF = async () => {
-    if (!printRef.current || !formattedHtml) return;
-    setIsExporting(true);
-
-    try {
-      // @ts-ignore
-      const html2pdf = (await import('html2pdf.js')).default;
-
-      const opt = {
-        margin:       [25.4, 25.4, 25.4, 25.4] as [number, number, number, number],
-        filename:     'Advanced_Document.pdf',
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr', 'blockquote'] },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
-      };
-
-      await html2pdf().set(opt).from(printRef.current).save();
-    } catch (error) {
-      console.error("PDF Export failed:", error);
-      alert("Failed to export PDF.");
-    } finally {
-      setIsExporting(false);
     }
   };
 
@@ -314,7 +277,7 @@ export default function Home() {
           <div className="bg-black text-white p-2 rounded-lg">
             <FileJson size={20} />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-black">Ultimate<span className="text-gray-500">Workspace</span></h1>
+          <h1 className="text-xl font-semibold tracking-tight text-black">Native<span className="text-gray-500">PDF Engine</span></h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -330,19 +293,10 @@ export default function Home() {
           <button
             onClick={handleBrowserPrint}
             disabled={!formattedHtml}
-            className={`text-sm font-medium px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${formattedHtml ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm" : "bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed"}`}
+            className={`text-sm font-medium px-5 py-2 rounded-md transition-colors flex items-center gap-2 ${formattedHtml ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
           >
-             <Printer size={16} />
-             Print
-          </button>
-
-          <button
-            onClick={handleExportPDF}
-            disabled={!formattedHtml || isExporting}
-            className={`text-sm font-medium px-5 py-2 rounded-md transition-colors flex items-center gap-2 ${formattedHtml && !isExporting ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
-          >
-            {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            {isExporting ? "Generating PDF..." : "Export to PDF"}
+             <Download size={16} />
+             Export to PDF (Native)
           </button>
         </div>
       </header>
@@ -356,7 +310,7 @@ export default function Home() {
             <div className="p-4 border-b border-gray-800 flex items-center justify-between bg-[#2d2d2d]">
               <div className="flex items-center gap-2">
                 <Code2 size={18} className="text-blue-400" />
-                <h2 className="text-sm font-semibold text-gray-200">1. Define Advanced AST Configuration</h2>
+                <h2 className="text-sm font-semibold text-gray-200">1. AST Configuration</h2>
               </div>
               {jsonError ? (
                  <span className="text-xs text-red-400 flex items-center gap-1 font-medium bg-red-400/10 px-2 py-1 rounded"><AlertCircle size={14}/> {jsonError}</span>
@@ -382,11 +336,6 @@ export default function Home() {
               className={`p-4 rounded-full shadow-xl transition-transform ${isReady ? "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/40 hover:scale-105 active:scale-95 group relative" : "bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300"}`}
             >
                <Wand2 size={24} className={isReady ? "group-hover:animate-pulse" : ""} />
-               {isReady && (
-                <span className="absolute -top-10 bg-black text-white text-xs py-1 px-3 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                  Render Document
-                </span>
-              )}
             </button>
           </div>
         )}
@@ -394,17 +343,11 @@ export default function Home() {
         {/* Right Panel / Center Canvas: Output Render */}
         <section className={`${zenMode ? 'w-full max-w-[21cm] bg-transparent' : 'flex-1 bg-[#F0F2F5] rounded-xl overflow-hidden relative'} flex flex-col print:w-full print:max-w-none print:block transition-all duration-300`}>
 
-          {!zenMode && (
-            <div className="p-4 flex items-center justify-between z-10 print:hidden">
-               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest ml-4">Print Preview</h2>
-            </div>
-          )}
-
-          <div className={`flex-1 ${zenMode ? '' : 'overflow-y-auto px-6 pb-6'} flex flex-col items-center print:overflow-visible print:p-0`}>
+          <div className={`flex-1 ${zenMode ? '' : 'overflow-y-auto px-6 pb-6'} flex flex-col items-center print:overflow-visible print:p-0 print:block`}>
              {formattedHtml ? (
                <div
                  ref={printRef}
-                 className="w-full text-black print-container print:w-full print:p-0 print:shadow-none"
+                 className="w-full text-black print-container bg-white shadow-xl min-h-[29.7cm] p-[96px] print:shadow-none print:m-0 print:p-[2cm] print:w-full"
                  dangerouslySetInnerHTML={{ __html: formattedHtml }}
                />
              ) : (
@@ -413,7 +356,7 @@ export default function Home() {
                     <FileJson size={32} className="text-gray-300" />
                  </div>
                  <p className="text-sm text-gray-600 font-medium">Workspace is Empty</p>
-                 <p className="text-xs text-gray-400 mt-2 leading-relaxed">Paste your valid advanced JSON on the left and click the magic wand.</p>
+                 <p className="text-xs text-gray-400 mt-2 leading-relaxed">Paste your valid JSON and click the magic wand.</p>
                </div>
              )}
           </div>
@@ -422,12 +365,35 @@ export default function Home() {
 
       </main>
 
-      {/* Global CSS for Print Media to Hide non-document stuff during window.print() */}
+      {/* Global Native CSS for Print Media */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          body { background-color: white; margin: 0; padding: 0; }
-          .print-container { box-shadow: none !important; margin: 0 !important; }
-          .a4-page-wrapper { margin: 0 !important; }
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+          body {
+            background-color: white !important;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .print-container {
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 1in !important; /* Forces 1 inch margin purely inside the PDF generator */
+            width: 100% !important;
+          }
+          .native-page-break {
+             break-before: page;
+             page-break-before: always;
+          }
+          .print-watermark {
+             position: fixed !important;
+             top: 50% !important;
+             left: 50% !important;
+          }
         }
       `}} />
     </div>
